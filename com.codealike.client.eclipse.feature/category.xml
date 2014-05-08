@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/com.codealike.client.eclipse.feature_0.1.0.v201401061624.jar" id="com.codealike.client.eclipse.feature" version="0.1.0.v201401061624">
+      <category name="codealike"/>
+   </feature>
+   <feature url="features/com.codealike.client.eclipse.feature_0.2.2.qualifier.jar" id="com.codealike.client.eclipse.feature" version="0.2.2.qualifier">
+      <category name="codealike"/>
+   </feature>
+   <feature url="features/com.codealike.client.eclipse.feature_0.2.1.v201401281838.jar" id="com.codealike.client.eclipse.feature" version="0.2.1.v201401281838">
+      <category name="codealike"/>
+   </feature>
+   <feature url="features/com.codealike.client.eclipse.feature_0.3.0.qualifier.jar" id="com.codealike.client.eclipse.feature" version="0.3.0.qualifier">
+      <category name="codealike"/>
+   </feature>
+   <feature url="features/com.codealike.client.eclipse.feature_0.3.1.qualifier.jar" id="com.codealike.client.eclipse.feature" version="0.3.1.qualifier">
+      <category name="codealike"/>
+   </feature>
+   <category-def name="codealike" label="Codealike"/>
+</site>

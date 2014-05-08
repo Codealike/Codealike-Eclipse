@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            name="Codealike"
+            id="com.codealike.client.eclipse">
+      </category>
+      <view
+            allowMultiple="false"
+            category="com.codealike.client.eclipse"
+            class="com.codealike.client.eclipse.views.CodealikeDashboard"
+            icon="icons/Codealike.jpg"
+            id="com.codealike.client.eclipse.views.CodealikeDashboard"
+            name="Codealike Dashboard">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.startup">
+      <startup
+            class="com.codealike.client.eclipse.internal.startup.Startup">
+      </startup>
+   </extension>
+
+</plugin>
