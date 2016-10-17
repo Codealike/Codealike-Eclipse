@@ -2,7 +2,6 @@ package com.codealike.client.eclipse.internal.startup;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.security.KeyManagementException;
 import java.util.Properties;
@@ -41,7 +40,6 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 public class PluginContext {
 
 
-	private static final String CODEALIKE_PROPERTIES_FILE = "codealike.properties.dev";
 	private static final String PLUGIN_PREFERENCES_QUALIFIER = "com.codealike.client.eclipse";
 	private static PluginContext _instance;
 	
@@ -60,16 +58,19 @@ public class PluginContext {
 	
 	public static final UUID UNASSIGNED_PROJECT = UUID.fromString("00000000-0000-0000-0000-0000000001");
 	
-	public static PluginContext getInstance()
-	{
-		if (_instance == null)
-		{
-			_instance = new PluginContext();
-		}
+	public static PluginContext getInstance() {
+		return PluginContext.getInstance(null);
+	}
+	
+	public static PluginContext getInstance(Properties properties) {
+			if (_instance == null)
+			{
+				_instance = new PluginContext(properties);
+			}
 		return _instance;
 	}
 	
-	public PluginContext() {
+	public PluginContext(Properties properties) {
 		DateTimeZone.setDefault(DateTimeZone.UTC);
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -87,6 +88,7 @@ public class PluginContext {
 		this.identityService = IdentityService.getInstance();
 		this.instanceValue = String.valueOf(new Random(DateTime.now().getMillis()).nextInt(Integer.MAX_VALUE) + 1);
 		this.protocolVersion = new Version(0, 9);
+		this.properties = properties;
 	}
 	
 	public String getPluginVersion() {
@@ -111,10 +113,7 @@ public class PluginContext {
 
 	public void initializeContext() throws IOException {
 		this.trackingService = TrackingService.getInstance();
-		properties = new Properties();
-		InputStream in = PluginContext.class.getResourceAsStream(CODEALIKE_PROPERTIES_FILE);
-		properties.load(in);
-		in.close();
+
 		trackerFolder = new File(getHomeFolder() + getActivityLogLocation());
 		if (!trackerFolder.exists()) {
 			trackerFolder.mkdirs();

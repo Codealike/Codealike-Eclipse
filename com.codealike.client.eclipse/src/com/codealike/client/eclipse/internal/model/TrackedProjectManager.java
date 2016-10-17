@@ -60,7 +60,7 @@ public class TrackedProjectManager {
 	}
 
 	public boolean trackProject(IProject project, UUID projectId) {
-		if (trackedProjects.containsKey(project)) {
+		if (trackedProjects.containsKey(project) || trackedProjects.containsValue(projectId)) {
 			return false;
 		}
 		this.trackedProjects.put(project, projectId);

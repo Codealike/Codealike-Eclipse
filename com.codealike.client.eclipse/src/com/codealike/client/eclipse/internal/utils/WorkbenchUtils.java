@@ -1,5 +1,6 @@
 package com.codealike.client.eclipse.internal.utils;
 
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IViewSite;
@@ -16,32 +17,46 @@ public class WorkbenchUtils {
 
 	public static IWorkbenchWindow getActiveWindow() {
 		final IWorkbenchWindow[] win = new IWorkbenchWindow[1];
-		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+		
+		Runnable r = new Runnable(){
 			@Override
 			public void run() {
 				win[0] = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-			}
-		});
+			}		
+		};
+		
+		if ( Display.getCurrent() != null )
+			r.run();
+		else
+			Display.getDefault().asyncExec(r);
+
 		return win[0];
 	}
 
 	public static boolean isActiveShell(IWorkbenchWindow win) {
 		final Shell shell = win.getShell();
 		final boolean[] result = new boolean[1];
-		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+		
+		Runnable r = new Runnable() {
 			@Override
 			public void run() {
 				result[0] = shell.getDisplay().getActiveShell() == shell
 						&& !shell.getMinimized();
 			}
-		});
+		};
+		
+		if ( Display.getCurrent() != null )
+			r.run();
+		else
+			Display.getDefault().asyncExec(r);
+		
 		return result[0];
 	}
 	
 	public static IEditorPart getActiveEditor() {
 		final IEditorPart[] result = new IEditorPart[1];
-		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
-
+		
+		Runnable r = new Runnable() {
 			@Override
 			public void run() {
 				IWorkbenchWindow activeWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
@@ -50,7 +65,12 @@ public class WorkbenchUtils {
 					result[0] = page.getActiveEditor();
 				}
 			}
-		});
+		};
+		
+		if ( Display.getCurrent() != null )
+			r.run();
+		else
+			Display.getDefault().asyncExec(r);
 		
 		return result[0];
 	}
@@ -58,28 +78,41 @@ public class WorkbenchUtils {
 	public static void addMessageToStatusBar(final String message) {
 		new Thread() {
 			public void run() {
-				PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
+
+				Runnable r = new Runnable() {
 					@Override
 					public void run() {
-						IWorkbenchSite site = WorkbenchUtils.getActiveWindow().getActivePage().getActivePart().getSite();
 						
-						// Setting message in status bar if we are outside of CodealikeDashboard view
-						if (site instanceof IViewSite) {
-							IViewSite vSite = (IViewSite)site;
-							vSite.getActionBars().getStatusLineManager().setMessage(message);
-						}
-						else if (site instanceof PartSite) {
-							PartSite pSite = (PartSite)site;
-							pSite.getActionBars().getStatusLineManager().setMessage(message);
-						}
+						try{							
+							IWorkbenchSite site = WorkbenchUtils.getActiveWindow().getActivePage().getActivePart().getSite();
+							
+							// Setting message in status bar if we are outside of CodealikeDashboard view
+							if (site instanceof IViewSite) {
+								IViewSite vSite = (IViewSite)site;
+								vSite.getActionBars().getStatusLineManager().setMessage(message);
+							}
+							else if (site instanceof PartSite) {
+								PartSite pSite = (PartSite)site;
+								pSite.getActionBars().getStatusLineManager().setMessage(message);
+							}
+							
+							
+							if (WorkbenchUtils.getActiveWindow().getActivePage().findView(CodealikeDashboard.ID) != null) {
+								WorkbenchUtils.getActiveWindow().getActivePage().findView(CodealikeDashboard.ID).getViewSite().
+								getActionBars().getStatusLineManager().setMessage(message);
+							}
 						
-						
-						if (WorkbenchUtils.getActiveWindow().getActivePage().findView(CodealikeDashboard.ID) != null) {
-							WorkbenchUtils.getActiveWindow().getActivePage().findView(CodealikeDashboard.ID).getViewSite().
-							getActionBars().getStatusLineManager().setMessage(message);
 						}
+						catch ( Exception e ){
+							// Avoid failing if for some reason we cannot write the message synchronously.
+						}	
 					}
-				});
+				};
+					
+				if ( Display.getCurrent() != null )
+					r.run();
+				else
+					Display.getDefault().asyncExec(r);			
 			}
 		}.start();
 	}

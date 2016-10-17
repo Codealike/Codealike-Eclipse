@@ -140,13 +140,13 @@ public class TrackingService extends Observable {
 			return;
 		}
 		UUID projectId = PluginContext.getInstance().getOrCreateUUID(project);
-		if (projectId != null) {
-			if (trackedProjectManager.trackProject(project, projectId)) {
-				tracker.startTrackingProject(project, projectId, this.startWorkspaceDate);
-			}
+		if (projectId != null && trackedProjectManager.trackProject(project, projectId)) {
+			tracker.startTrackingProject(project, projectId, this.startWorkspaceDate);
 		}
 		else {
-			LogManager.INSTANCE.logWarn(String.format("Could not track project %s", project.getName()));
+			LogManager.INSTANCE.logWarn(String.format("Could not track project %s. "
+					+ "If you have a duplicated UUID in any of your \"com.codealike.client.eclipse.prefs\" please delete one of those to generate a new UUID for"
+					+ "that project", project.getName()));
 		}
 	}
 	

@@ -21,6 +21,7 @@ import javax.ws.rs.core.Response;
 import java.security.cert.*;
 
 import com.codealike.client.eclipse.internal.dto.ActivityInfo;
+import com.codealike.client.eclipse.internal.dto.HealthInfo;
 import com.codealike.client.eclipse.internal.dto.ProfileInfo;
 import com.codealike.client.eclipse.internal.dto.SolutionContextInfo;
 import com.codealike.client.eclipse.internal.dto.UserConfigurationInfo;
@@ -114,6 +115,33 @@ public class ApiClient {
 			} else {
 				return new ApiResponse<Void>(ApiResponse.Status.ClientError);
 			}
+		}
+	}
+	
+	public ApiResponse<Void> logHealth(HealthInfo healthInfo) {
+		try {
+			WebTarget target = apiTarget.path("health");
+
+			ObjectWriter writer = PluginContext.getInstance().getJsonWriter();
+			String healthInfoLog = writer.writeValueAsString(healthInfo);
+			
+			Invocation.Builder invocationBuilder = target.request().accept(
+					MediaType.APPLICATION_JSON);
+			addHeaders(invocationBuilder);
+			
+			Response response = null;
+			try {
+				response = invocationBuilder.put(Entity.entity(healthInfoLog,
+						MediaType.APPLICATION_JSON));
+			} catch (Exception e) {
+				return new ApiResponse<Void>(ApiResponse.Status.ConnectionProblems);
+			}
+			return new ApiResponse<Void>(response.getStatus(), response
+					.getStatusInfo().getReasonPhrase());
+		} catch (JsonProcessingException e) {
+			return new ApiResponse<Void>(ApiResponse.Status.ClientError,
+					String.format("Problem parsing data from the server. %s",
+							e.getMessage()));
 		}
 	}
 

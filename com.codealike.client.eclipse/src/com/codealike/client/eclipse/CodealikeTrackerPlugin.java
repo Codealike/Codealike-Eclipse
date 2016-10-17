@@ -1,13 +1,19 @@
 package com.codealike.client.eclipse;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Properties;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
+import com.codealike.client.eclipse.api.ApiClient;
+import com.codealike.client.eclipse.internal.dto.HealthInfo;
+import com.codealike.client.eclipse.internal.dto.HealthInfo.HealthInfoType;
 import com.codealike.client.eclipse.internal.services.IdentityService;
 import com.codealike.client.eclipse.internal.services.TrackingService;
 import com.codealike.client.eclipse.internal.startup.PluginContext;
@@ -22,6 +28,7 @@ public class CodealikeTrackerPlugin extends AbstractUIPlugin {
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "com.codealike.client.eclipse"; //$NON-NLS-1$
+	private static final String CODEALIKE_PROPERTIES_FILE = "codealike.properties";
 
 	// The shared instance
 	private static CodealikeTrackerPlugin plugin;
@@ -70,18 +77,19 @@ public class CodealikeTrackerPlugin extends AbstractUIPlugin {
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
 	 */
 	public void start(BundleContext context) throws Exception {
-		super.start(context);
 		plugin = this;
-		this.pluginContext = PluginContext.getInstance();
-	    pluginContext.initializeContext();
-	    
-	    if (!pluginContext.checkVersion()) {
-	    	throw new Exception();
-	    }
-	    
-	    pluginContext.getTrackingService().setBeforeOpenProjectDate();
-	    pluginContext.getIdentityService().addObserver(loginObserver);
+		this.pluginContext = PluginContext.getInstance(loadPluginProperties());
+		
 		try {
+			pluginContext.initializeContext();
+			super.start(context);
+		    
+		    if (!pluginContext.checkVersion()) {
+		    	throw new Exception();
+		    }
+		    
+		    pluginContext.getTrackingService().setBeforeOpenProjectDate();
+		    pluginContext.getIdentityService().addObserver(loginObserver);
 			if (!pluginContext.getIdentityService().tryLoginWithStoredCredentials()) {
 				PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
 					
@@ -97,8 +105,19 @@ public class CodealikeTrackerPlugin extends AbstractUIPlugin {
 		}
 		catch (Exception e)
 		{
+			ApiClient client = ApiClient.tryCreateNew();
+			client.logHealth(new HealthInfo(e, "Plugin could not start.", "eclipse", HealthInfoType.Error, pluginContext.getIdentityService().getIdentity()));
 			LogManager.INSTANCE.logError(e, "Couldn't start plugin.");
 		}
+	}
+	
+	protected Properties loadPluginProperties() throws IOException {
+		Properties properties = new Properties();
+		InputStream in = CodealikeTrackerPlugin.class.getResourceAsStream(CODEALIKE_PROPERTIES_FILE);
+		properties.load(in);
+		in.close();
+		
+		return properties;
 	}
 	
 	protected void startTracker() {
@@ -117,7 +136,7 @@ public class CodealikeTrackerPlugin extends AbstractUIPlugin {
 	 */
 	public void stop(BundleContext context) throws Exception {
 		
-		if (pluginContext != null) {
+		if (pluginContext != null && pluginContext.getTrackingService() != null) {
 			pluginContext.getTrackingService().stopTracking(false);
 		}
 		

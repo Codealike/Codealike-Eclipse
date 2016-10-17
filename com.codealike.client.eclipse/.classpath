@@ -28,6 +28,5 @@
 	<classpathentry kind="lib" path="lib/javax.ws.rs-api-2.0.jar"/>
 	<classpathentry kind="lib" path="lib/jersey-client.jar"/>
 	<classpathentry kind="lib" path="lib/jersey-common.jar"/>
-	<classpathentry kind="lib" path="C:/Eclipse/plugins/org.eclipse.jdt.core_3.9.1.v20130905-0837.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

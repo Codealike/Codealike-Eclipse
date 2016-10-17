@@ -61,7 +61,6 @@ public class IdentityService extends Observable {
 
 				this.identity = identity;
 				this.token = token;
-				this.isAuthenticated = true;
 				if (storeCredentials) {
 					if (rememberMe) {
 						storeCredentials(identity, token);
@@ -85,6 +84,7 @@ public class IdentityService extends Observable {
 					UserConfigurationInfo config = configResponse.getObject();
 					this.trackActivities = config.getTrackActivities();
 				}
+				this.isAuthenticated = true;
 				setChanged();
 				notifyObservers();
 				return true;

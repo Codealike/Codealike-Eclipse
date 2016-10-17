@@ -73,6 +73,9 @@ public class StateTracker {
 	private ContextCreator contextCreator;
 	private ScheduledThreadPoolExecutor idleDetectionExecutor;
 	
+	/**
+	 * Listens to the build events. Since build is automatic by default, this will happen many times while working.
+	 */
 	private final IResourceChangeListener buildEventsListener = new IResourceChangeListener() {
 		
 		@Override
