@@ -22,6 +22,7 @@ import java.security.cert.*;
 
 import com.codealike.client.eclipse.internal.dto.ActivityInfo;
 import com.codealike.client.eclipse.internal.dto.HealthInfo;
+import com.codealike.client.eclipse.internal.dto.PluginSettingsInfo;
 import com.codealike.client.eclipse.internal.dto.ProfileInfo;
 import com.codealike.client.eclipse.internal.dto.SolutionContextInfo;
 import com.codealike.client.eclipse.internal.dto.UserConfigurationInfo;
@@ -148,6 +149,50 @@ public class ApiClient {
 	public ApiResponse<Version> version() {
 		WebTarget target = apiTarget.path("version").queryParam("client", "Eclipse");
 		return doGet(target, Version.class);
+	}
+	
+	public static ApiResponse<PluginSettingsInfo> getPluginSettings() {
+		ObjectMapper mapper = new ObjectMapper();
+		ClientBuilder builder = ClientBuilder.newBuilder();
+		Client client = builder.build();
+		WebTarget pluginSettingsTarget = client.target("https://codealike.com/api/v2/public/PluginsConfiguration");
+
+		Invocation.Builder invocationBuilder = pluginSettingsTarget.request(
+				MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+
+		try {
+			Response response = null;
+			try {
+				response = invocationBuilder.get();
+			} catch (Exception e) {
+				return new ApiResponse<PluginSettingsInfo>(ApiResponse.Status.ConnectionProblems);
+			}
+
+			if (response.getStatusInfo().getStatusCode() == Response.Status.OK.getStatusCode()) {
+				// process response to get a valid json string representation
+				String serializedObject = response.readEntity(String.class);
+				String normalizedObject = serializedObject.substring(1, serializedObject.length()-1).replace("\\", "");
+
+				// parse the json object to get a valid plugin settings object
+				PluginSettingsInfo pluginSettingsInfo = mapper.readValue(normalizedObject, PluginSettingsInfo.class);
+
+				if (pluginSettingsInfo != null) {
+					return new ApiResponse<PluginSettingsInfo>(
+							response.getStatus(), response.getStatusInfo()
+							.getReasonPhrase(), pluginSettingsInfo);
+				} else {
+					return new ApiResponse<PluginSettingsInfo>(ApiResponse.Status.ClientError,
+							"Problem parsing data from the server.");
+				}
+			} else {
+				return new ApiResponse<PluginSettingsInfo>(response.getStatus(), response
+						.getStatusInfo().getReasonPhrase());
+			}
+		} catch (Exception e) {
+			return new ApiResponse<PluginSettingsInfo>(ApiResponse.Status.ClientError,
+					String.format("Problem parsing data from the server. %s",
+							e.getMessage()));
+		}
 	}
 
 	public ApiResponse<SolutionContextInfo> getSolutionContext(UUID projectId) {

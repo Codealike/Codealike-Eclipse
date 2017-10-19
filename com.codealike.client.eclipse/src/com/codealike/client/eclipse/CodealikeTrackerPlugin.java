@@ -6,7 +6,11 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Properties;
 
+import org.eclipse.e4.core.services.nls.Message;
+import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.SWT;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
@@ -125,9 +129,34 @@ public class CodealikeTrackerPlugin extends AbstractUIPlugin {
 	}
 
 	private void authenticate() {
+		InputDialog dialog = new InputDialog(null, "Codealike Authentication", "Codealike Token:", "", null);
+		int result = dialog.open();
+		
+		if (result == 0) {
+			IdentityService identityService = IdentityService.getInstance();
+			String token = dialog.getValue();
+			
+	        String[] split = token.split("/");
+	        if (split.length == 2) {
+	            if(identityService.login(split[0], split[1], true, true)) {
+	                // nothing to do
+	            }
+	            else {
+	        		MessageDialog.open(MessageDialog.ERROR, 
+	        				PlatformUI.getWorkbench().getModalDialogShellProvider().getShell(),
+	        				"Codealike Authentication", "We couldn't authenticate you. Please verify your token and try again", SWT.NONE);
+	            }
+	        }
+	        else {
+	        	MessageDialog.open(MessageDialog.ERROR, 
+        				PlatformUI.getWorkbench().getModalDialogShellProvider().getShell(),
+        				"Codealike Authentication", "We couldn't authenticate you. Please verify your token and try again", SWT.NONE);
 
-		AuthenticationBrowserView view = new AuthenticationBrowserView();
-		view.showLogin(false);
+	        }
+		}
+		
+		//AuthenticationBrowserView view = new AuthenticationBrowserView();
+		//view.showLogin(false);
 	}
 
 	/*

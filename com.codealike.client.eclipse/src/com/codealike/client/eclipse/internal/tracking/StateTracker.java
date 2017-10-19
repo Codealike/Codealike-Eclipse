@@ -64,8 +64,6 @@ public class StateTracker {
 	private ActivityState currentState;
 	private ActivityState lastState;
 	private final Display display;
-	private final Duration idleMinInterval;
-	private final int idleDetectionPeriod;
 	private Set<IDocument> registeredDocs;
 	protected IResource currentCompilationUnit;
 	private CodeContext lastCodeContext;
@@ -457,10 +455,7 @@ public class StateTracker {
 		}
 	};
 
-	public StateTracker(Display disp, int idleDetectionPeriod,
-			Duration idleMinInterval) {
-		this.idleDetectionPeriod = idleDetectionPeriod;
-		this.idleMinInterval = idleMinInterval;
+	public StateTracker(Display disp) {
 		this.registeredDocs = new HashSet<IDocument>();
 		this.contextCreator = PluginContext.getInstance().getContextCreator();
 		display = disp;
@@ -516,6 +511,7 @@ public class StateTracker {
 			}
 		};
 		
+		int idleDetectionPeriod = PluginContext.getInstance().getConfiguration().getIdleCheckInterval();
 		this.idleDetectionExecutor.scheduleAtFixedRate(idlePeriodicTask, idleDetectionPeriod,
 				idleDetectionPeriod, TimeUnit.MILLISECONDS);
 	}
@@ -531,7 +527,8 @@ public class StateTracker {
 				Duration duration = new Duration(state.getLastActivity(), now);
 				state.setLastActivity(now);
 				
-
+				long idleMaxPeriodInSeconds = PluginContext.getInstance().getConfiguration().getIdleMinInterval() / 1000;
+				Duration idleMinInterval = Duration.standardMinutes(idleMaxPeriodInSeconds/60);
 				if (duration.compareTo(idleMinInterval) < 0) {
 					currentState = ActivityState.createIdleState(PluginContext.UNASSIGNED_PROJECT);
 					recorder.recordState(currentState);

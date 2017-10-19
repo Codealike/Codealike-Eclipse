@@ -22,10 +22,6 @@ import com.codealike.client.eclipse.internal.utils.WorkbenchUtils;
 import com.google.common.collect.BiMap;
 
 public class TrackingService extends Observable {
-
-	public static final Duration TWO_MINUTES = Duration.standardMinutes(2);
-	public static final Duration TEN_SECONDS = Duration.standardSeconds(10);
-	public static final int ONE_SECOND = 1000;
 	private static TrackingService _instance;
 	
 	private TrackedProjectManager trackedProjectManager;
@@ -49,7 +45,7 @@ public class TrackingService extends Observable {
 	
 	public TrackingService() {
 		this.trackedProjectManager = new TrackedProjectManager();
-		this.tracker = new StateTracker(PlatformUI.getWorkbench().getDisplay(), ONE_SECOND, TWO_MINUTES);
+		this.tracker = new StateTracker(PlatformUI.getWorkbench().getDisplay());
 		this.changesListener = new WorkspaceChangesListener();
 		this.isTracking = false;
 	}
@@ -99,8 +95,8 @@ public class TrackingService extends Observable {
 			}
 		};
 		
-		int flushInterval = Integer.valueOf(context.getProperty("activity-log.interval.secs"));
-		this.flushExecutor.scheduleAtFixedRate(idlePeriodicTask, flushInterval, flushInterval, TimeUnit.SECONDS);
+		int flushInterval = this.context.getConfiguration().getFlushInterval();
+		this.flushExecutor.scheduleAtFixedRate(idlePeriodicTask, flushInterval, flushInterval, TimeUnit.MILLISECONDS);
 	}
 	
 	public void stopTracking(boolean propagate) {
