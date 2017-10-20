@@ -166,7 +166,6 @@ public class PluginContext {
 					if (!registerProjectContext(solutionId, project.getName()) ) {
 						return null;
 					}
-					changeSolutionId(projectNode, solutionId);
 				}
 				else {
 					solutionId = UUID.fromString(solutionIdString);
@@ -185,7 +184,7 @@ public class PluginContext {
 		UUID solutionId = null;
 		
 		// try first to load codealike.json file from project folder
-		ProjectSettings projectSettings = configuration.loadProjectSettings(project.getFullPath().toString());
+		ProjectSettings projectSettings = configuration.loadProjectSettings(project.getLocation().toString());
 		
 		if (projectSettings.getProjectId() == null) {
 			// if configuration was not found in the expected place
@@ -201,7 +200,7 @@ public class PluginContext {
 				projectSettings.setProjectName(project.getName());
 
 				// and save the file for future uses
-				configuration.saveProjectSettings(project.getFullPath().toString(), projectSettings);
+				configuration.saveProjectSettings(project.getLocation().toString(), projectSettings);
 			}
 			else {
 				// if we reached this branch
@@ -213,7 +212,7 @@ public class PluginContext {
 			}
 		}
 		
-		return solutionId;
+		return projectSettings.getProjectId();
 	}
 	
 	private String getActivityLogLocation() {
@@ -225,14 +224,6 @@ public class PluginContext {
 		//Get user preferences file
 		ProjectPreferences projectNode = (ProjectPreferences) projectScope.getNode(PLUGIN_PREFERENCES_QUALIFIER);
 		return projectNode;
-	}
-
-	private UUID changeSolutionId(ProjectPreferences projectNode, UUID solutionId) throws Exception,
-			BackingStoreException {
-
-		projectNode.put("solutionId", solutionId.toString());
-		projectNode.flush();
-		return solutionId;
 	}
 	
 	private String findLocalHostNameOr(String defaultName) {
