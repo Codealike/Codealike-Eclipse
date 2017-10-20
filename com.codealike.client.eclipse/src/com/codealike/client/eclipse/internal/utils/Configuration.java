@@ -257,7 +257,7 @@ public class Configuration {
         File instancePath = new File(clientPath, instanceId);
         this.ensurePathExists(instancePath);
 
-        File cachePath = new File(basePath, "cache-idea");
+        File cachePath = new File(basePath, "cache-eclipse");
         this.ensurePathExists(cachePath);
 
         File historyPath = new File(basePath, "history");
