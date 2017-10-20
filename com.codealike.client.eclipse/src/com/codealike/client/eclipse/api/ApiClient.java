@@ -35,8 +35,8 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 public class ApiClient {
 
 	private static final String X_EAUTH_CLIENT_HEADER = "X-Eauth-Client";
-	private static final String X_EAUTH_TOKEN_HEADER = "X-Eauth-Token";
-	public static final String X_EAUTH_IDENTITY_HEADER = "X-Eauth-Identity";
+	private static final String X_EAUTH_TOKEN_HEADER = "X-Api-Token";
+	public static final String X_EAUTH_IDENTITY_HEADER = "X-Api-Identity";
 	public static final int MAX_RETRIES = 5;
 
 	private WebTarget apiTarget;
