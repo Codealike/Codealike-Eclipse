@@ -2,6 +2,8 @@ package com.codealike.client.eclipse.internal.services;
 
 import java.util.Observable;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -18,6 +20,7 @@ import com.codealike.client.eclipse.internal.tracking.StateTracker;
 import com.codealike.client.eclipse.internal.tracking.ActivitiesRecorder.FlushResult;
 import com.codealike.client.eclipse.internal.tracking.workspace.WorkspaceChangesListener;
 import com.codealike.client.eclipse.internal.utils.LogManager;
+import com.codealike.client.eclipse.internal.utils.TrackingConsole;
 import com.codealike.client.eclipse.internal.utils.WorkbenchUtils;
 import com.google.common.collect.BiMap;
 
@@ -25,7 +28,7 @@ public class TrackingService extends Observable {
 	private static TrackingService _instance;
 	
 	private TrackedProjectManager trackedProjectManager;
-	private ScheduledThreadPoolExecutor flushExecutor;
+	private ScheduledExecutorService flushExecutor = null;
 	private StateTracker tracker;
 	private boolean isTracking;
 	private WorkspaceChangesListener changesListener;
@@ -73,36 +76,50 @@ public class TrackingService extends Observable {
 	}
 	
 	private void startFlushExecutor() {
-		this.flushExecutor = new ScheduledThreadPoolExecutor(1);
-		Runnable idlePeriodicTask = new Runnable() {
+		if (this.flushExecutor != null)
+			return;
+		
+		this.flushExecutor = Executors.newScheduledThreadPool(1);
+		Runnable flushPeriodicTask = new Runnable() {
 			
 			@Override
 			public void run() {
-				WorkbenchUtils.addMessageToStatusBar("Codealike is sending activities...");
-				FlushResult result = tracker.flush(context.getIdentityService().getIdentity(), context.getIdentityService().getToken());
-				switch (result) {
-				case Succeded:
-					WorkbenchUtils.addMessageToStatusBar("Codealike sent activities");
-					break;
-				case Skip:
-					WorkbenchUtils.addMessageToStatusBar("No data to be sent");
-					break;
-				case Offline:
-					WorkbenchUtils.addMessageToStatusBar("Codealike is working in offline mode");
-				case Report:
-					WorkbenchUtils.addMessageToStatusBar("Codealike is storing corrupted entries for further inspection");
+				try {
+					TrackingConsole.getInstance().trackMessage("Flush tracking information executed");
+					flushTrackingInformation();
+				}
+				catch(Exception e) {
+					TrackingConsole.getInstance().trackMessage("Flush tracking information error " + e.getMessage());
 				}
 			}
 		};
 		
 		int flushInterval = this.context.getConfiguration().getFlushInterval();
-		this.flushExecutor.scheduleAtFixedRate(idlePeriodicTask, flushInterval, flushInterval, TimeUnit.MILLISECONDS);
+		this.flushExecutor.scheduleAtFixedRate(flushPeriodicTask, flushInterval, flushInterval, TimeUnit.MILLISECONDS);
+	}
+	
+	private void flushTrackingInformation() {
+		WorkbenchUtils.addMessageToStatusBar("Codealike is sending activities...");
+		FlushResult result = tracker.flush(context.getIdentityService().getIdentity(), context.getIdentityService().getToken());
+		switch (result) {
+		case Succeded:
+			WorkbenchUtils.addMessageToStatusBar("Codealike sent activities");
+			break;
+		case Skip:
+			WorkbenchUtils.addMessageToStatusBar("No data to be sent");
+			break;
+		case Offline:
+			WorkbenchUtils.addMessageToStatusBar("Codealike is working in offline mode");
+		case Report:
+			WorkbenchUtils.addMessageToStatusBar("Codealike is storing corrupted entries for further inspection");
+		}
 	}
 	
 	public void stopTracking(boolean propagate) {
 		this.tracker.stopTracking();
 		if (this.flushExecutor != null) {
-			this.flushExecutor.shutdown();
+			this.flushExecutor.shutdownNow();
+			this.flushExecutor = null;
 		}
 		
 		this.trackedProjectManager.stopTracking();
