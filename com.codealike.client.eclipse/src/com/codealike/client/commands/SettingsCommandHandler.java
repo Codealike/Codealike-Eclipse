@@ -25,7 +25,7 @@ public class SettingsCommandHandler extends AbstractHandler {
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
 		
 		IdentityService identityService = IdentityService.getInstance();
-		String existingToken = identityService.getToken();
+		String existingToken = identityService.getIdentity() + "/" + identityService.getToken();
 		
 		InputDialog dialog = new InputDialog(null, "Codealike Authentication", "Codealike Token:", existingToken, null);
 		int result = dialog.open();
@@ -33,23 +33,29 @@ public class SettingsCommandHandler extends AbstractHandler {
 		if (result == 0) {
 			String token = dialog.getValue();
 			
-	        String[] split = token.split("/");
-	        if (split.length == 2) {
-	            if(identityService.login(split[0], split[1], true, true)) {
-	                // nothing to do
-	            }
-	            else {
-	        		MessageDialog.open(MessageDialog.ERROR, 
+			if (!token.isEmpty()) {
+		        String[] split = token.split("/");
+		        if (split.length == 2) {
+		            if(identityService.login(split[0], split[1], true, true)) {
+		                // nothing to do
+		            }
+		            else {
+		        		MessageDialog.open(MessageDialog.ERROR, 
+		        				PlatformUI.getWorkbench().getModalDialogShellProvider().getShell(),
+		        				"Codealike Authentication", "We couldn't authenticate you. Please verify your token and try again", SWT.NONE);
+		            }
+		        }
+		        else {
+		        	MessageDialog.open(MessageDialog.ERROR, 
 	        				PlatformUI.getWorkbench().getModalDialogShellProvider().getShell(),
 	        				"Codealike Authentication", "We couldn't authenticate you. Please verify your token and try again", SWT.NONE);
-	            }
-	        }
-	        else {
-	        	MessageDialog.open(MessageDialog.ERROR, 
-        				PlatformUI.getWorkbench().getModalDialogShellProvider().getShell(),
-        				"Codealike Authentication", "We couldn't authenticate you. Please verify your token and try again", SWT.NONE);
-
-	        }
+	
+		        }
+			}
+			else {
+				// if user removed the token, we just logoff and remove the token from computer
+				identityService.logOff();
+			}
 		}
 		
 		return null;
