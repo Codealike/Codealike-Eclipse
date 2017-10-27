@@ -162,7 +162,7 @@ public class ActivitiesRecorder {
 		
 		List<ActivityInfo> activityInfoList = processor.getSerializableEntities(context.getMachineName(), 
 				context.getInstanceValue(), context.getIdeName(), context.getPluginVersion());
-		String activityLogExtension = context.getProperty("activity-log.extension");
+
 		if (!processor.isActivityValid(activityInfoList)) {
 			return FlushResult.Skip;
 		}
@@ -178,7 +178,7 @@ public class ActivitiesRecorder {
 			}
 			FlushResult intermediateResult = trySendEntries(info, username, token);
 			if (intermediateResult == FlushResult.Succeded) {
-				for (final File fileEntry : cacheFolder.listFiles(new GenericExtensionFilter(activityLogExtension))) {
+				for (final File fileEntry : cacheFolder.listFiles()) {
 					trySendEntriesOnFile(fileEntry.getName(), username, token);
 			    }
 				
