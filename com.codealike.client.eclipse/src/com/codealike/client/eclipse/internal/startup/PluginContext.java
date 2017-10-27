@@ -44,7 +44,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 @SuppressWarnings("restriction")
 public class PluginContext {
 
-	public static final String VERSION = "1.0.0.0";
+	public static final String VERSION = "0.4.1";
 	private static final String PLUGIN_PREFERENCES_QUALIFIER = "com.codealike.client.eclipse";
 	private static PluginContext _instance;
 	
@@ -60,7 +60,6 @@ public class PluginContext {
 	private IdentityService identityService;
 	private TrackingService trackingService;
 	private String instanceValue;
-	private File trackerFolder;
 	
 	private String machineName;
 
@@ -145,11 +144,6 @@ public class PluginContext {
 
 	public void initializeContext() throws IOException {
 		this.trackingService = TrackingService.getInstance();
-
-		trackerFolder = new File(getHomeFolder() + getActivityLogLocation());
-		if (!trackerFolder.exists()) {
-			trackerFolder.mkdirs();
-		}
 	}
 
 	private UUID tryGetLegacySolutionIdV1(IProject project) {
@@ -213,10 +207,6 @@ public class PluginContext {
 		}
 		
 		return projectSettings.getProjectId();
-	}
-	
-	private String getActivityLogLocation() {
-		return getProperty("activity-log.path").replace(".", File.separator);
 	}
 
 	private ProjectPreferences getProjectPreferences(IProject project) {
@@ -383,10 +373,6 @@ public class PluginContext {
 
 	public String getInstanceValue() {
 		return instanceValue;
-	}
-
-	public File getTrackerFolder() {
-		return trackerFolder;
 	}
 
 	public Version getProtocolVersion() {
