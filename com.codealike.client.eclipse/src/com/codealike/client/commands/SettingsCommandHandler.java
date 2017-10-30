@@ -8,6 +8,8 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import com.codealike.client.eclipse.internal.services.IdentityService;
+import com.codealike.client.eclipse.internal.startup.PluginContext;
+import com.codealike.client.eclipse.internal.utils.Configuration;
 
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -24,8 +26,8 @@ public class SettingsCommandHandler extends AbstractHandler {
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
 		
-		IdentityService identityService = IdentityService.getInstance();
-		String existingToken = identityService.getIdentity() + "/" + identityService.getToken();
+		Configuration configuration = PluginContext.getInstance().getConfiguration();
+		String existingToken = configuration.getUserToken();
 		
 		InputDialog dialog = new InputDialog(null, "Codealike Authentication", "Codealike Token:", existingToken, null);
 		int result = dialog.open();
@@ -35,8 +37,9 @@ public class SettingsCommandHandler extends AbstractHandler {
 			
 			if (!token.isEmpty()) {
 		        String[] split = token.split("/");
+		        
 		        if (split.length == 2) {
-		            if(identityService.login(split[0], split[1], true, true)) {
+		            if(IdentityService.getInstance().login(split[0], split[1], true, true)) {
 		                // nothing to do
 		            }
 		            else {
@@ -54,7 +57,7 @@ public class SettingsCommandHandler extends AbstractHandler {
 			}
 			else {
 				// if user removed the token, we just logoff and remove the token from computer
-				identityService.logOff();
+				IdentityService.getInstance().logOff();
 			}
 		}
 		

@@ -21,6 +21,7 @@ import com.codealike.client.eclipse.internal.dto.HealthInfo.HealthInfoType;
 import com.codealike.client.eclipse.internal.services.IdentityService;
 import com.codealike.client.eclipse.internal.services.TrackingService;
 import com.codealike.client.eclipse.internal.startup.PluginContext;
+import com.codealike.client.eclipse.internal.utils.Configuration;
 import com.codealike.client.eclipse.internal.utils.LogManager;
 import com.codealike.client.eclipse.internal.utils.WorkbenchUtils;
 import com.codealike.client.eclipse.views.AuthenticationBrowserView;
@@ -129,16 +130,18 @@ public class CodealikeTrackerPlugin extends AbstractUIPlugin {
 	}
 
 	private void authenticate() {
-		InputDialog dialog = new InputDialog(null, "Codealike Authentication", "Codealike Token:", "", null);
+		Configuration configuration = PluginContext.getInstance().getConfiguration();
+		String existingToken = configuration.getUserToken();
+		
+		InputDialog dialog = new InputDialog(null, "Codealike Authentication", "Codealike Token:", existingToken, null);
 		int result = dialog.open();
 		
 		if (result == 0) {
-			IdentityService identityService = IdentityService.getInstance();
 			String token = dialog.getValue();
-			
 	        String[] split = token.split("/");
+	        
 	        if (split.length == 2) {
-	            if(identityService.login(split[0], split[1], true, true)) {
+	            if(IdentityService.getInstance().login(split[0], split[1], true, true)) {
 	                // nothing to do
 	            }
 	            else {
