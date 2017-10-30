@@ -1,5 +1,8 @@
 package com.codealike.client.eclipse.internal.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class GlobalSettings {
     private String userToken;
     private String apiUrl;
