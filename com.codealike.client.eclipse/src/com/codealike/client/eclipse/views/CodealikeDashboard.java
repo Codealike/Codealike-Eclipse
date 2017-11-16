@@ -32,14 +32,18 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.databinding.viewers.ObservableListContentProvider;
+import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.*;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
 
 import com.codealike.client.eclipse.internal.model.TrackedProjectManager;
+import com.codealike.client.eclipse.internal.services.IdentityService;
 import com.codealike.client.eclipse.internal.services.TrackingService;
 import com.codealike.client.eclipse.internal.startup.PluginContext;
+import com.codealike.client.eclipse.internal.utils.Configuration;
 
 
 public class CodealikeDashboard extends ViewPart {
@@ -125,15 +129,16 @@ public class CodealikeDashboard extends ViewPart {
 		parent.setLayout(layout);
 		signOut = new Link(parent, SWT.NONE);
 
-		signOut.setText("<a>Sign out</a>");
+		signOut.setText("<a>Codealike is connected</a>");
 		signOut.setFont(AVENIR_10);
 		signOut.addMouseListener(new MouseListener() {
 			
 			@Override
 			public void mouseUp(MouseEvent e) { 
-				hideOrShowButtons(false);
-				AuthenticationBrowserView view = new AuthenticationBrowserView();
-				view.showLogOff(true);
+				//hideOrShowButtons(false);
+				//AuthenticationBrowserView view = new AuthenticationBrowserView();
+				//view.showLogOff(true);
+				authenticate();
 			}
 			
 			@Override
@@ -149,25 +154,19 @@ public class CodealikeDashboard extends ViewPart {
 		
 		
 		signedOutLabel = new Label(parent, SWT.NONE);
-		signedOutLabel.setText("The configuration panel requires you to be signed in.");
+		signedOutLabel.setText("The configuration panel requires a valid token.");
 		signedOutLabel.setFont(AVENIR_10);
 		setHorizontalSpan(signedOutLabel, 3);
 		
 		new Label(parent, SWT.NONE);
 		signInOrRegister = new Link(parent, SWT.NONE);
-		signInOrRegister.setText("<a>Sign in</a>  or  <a>Register</a>");
+		signInOrRegister.setText("<a>Click here to configure Codealike</a>");
 		signInOrRegister.setFont(AVENIR_10);
 		signInOrRegister.addListener(SWT.Selection, new Listener() {
 
 			@Override
 			public void handleEvent(Event event) {
-				AuthenticationBrowserView view = new AuthenticationBrowserView();
-				if (event.text.equals("Sign in")) {
-					view.showLogin(true);
-				}
-				else {
-					view.showRegister(true);
-				}
+				authenticate();
 			}});
 		
 		setSignedAsLabelText();
@@ -354,5 +353,42 @@ public class CodealikeDashboard extends ViewPart {
 	 */
 	public void setFocus() {
 		viewer.getControl().setFocus();
+	}
+	
+	private void authenticate() {
+		Configuration configuration = PluginContext.getInstance().getConfiguration();
+		String existingToken = configuration.getUserToken();
+		
+		InputDialog dialog = new InputDialog(null, "Codealike Authentication", "Codealike Token:", existingToken, null);
+		int result = dialog.open();
+		
+		if (result == 0) {
+			String token = dialog.getValue();
+			
+			if (!token.isEmpty()) {
+		        String[] split = token.split("/");
+		        
+		        if (split.length == 2) {
+		            if(IdentityService.getInstance().login(split[0], split[1], true, true)) {
+		                // nothing to do
+		            }
+		            else {
+		        		MessageDialog.open(MessageDialog.ERROR, 
+		        				PlatformUI.getWorkbench().getModalDialogShellProvider().getShell(),
+		        				"Codealike Authentication", "We couldn't authenticate you. Please verify your token and try again", SWT.NONE);
+		            }
+		        }
+		        else {
+		        	MessageDialog.open(MessageDialog.ERROR, 
+	        				PlatformUI.getWorkbench().getModalDialogShellProvider().getShell(),
+	        				"Codealike Authentication", "We couldn't authenticate you. Please verify your token and try again", SWT.NONE);
+	
+		        }
+			}
+			else {
+				// if user removed the token, we just logoff and remove the token from computer
+				IdentityService.getInstance().logOff();
+			}
+		}
 	}
 }
