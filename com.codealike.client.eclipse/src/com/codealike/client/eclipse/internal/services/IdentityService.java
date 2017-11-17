@@ -48,18 +48,22 @@ public class IdentityService extends Observable {
 	}
 
 	public boolean login(String identity, String token, boolean storeCredentials, boolean rememberMe) {
-		WorkbenchUtils.addMessageToStatusBar("Codealike is connecting...");
 		if (this.isAuthenticated) {
+			WorkbenchUtils.addMessageToStatusBar("Codealike is connected.");
+			
 			setChanged();
 			notifyObservers();
 			return true;
 		}
 		try {
+			WorkbenchUtils.addMessageToStatusBar("Codealike is connecting...");
+			
 			ApiClient apiClient = ApiClient.tryCreateNew(identity, token);
 			ApiResponse<Void> response = apiClient.tokenAuthenticate();
 			
 			if (response.success()) {
-
+				WorkbenchUtils.addMessageToStatusBar("Codealike is connected.");
+				
 				this.identity = identity;
 				this.token = token;
 				if (storeCredentials) {

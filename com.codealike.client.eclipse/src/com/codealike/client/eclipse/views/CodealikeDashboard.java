@@ -104,8 +104,7 @@ public class CodealikeDashboard extends ViewPart {
 				}
 			}
 		}
-	};
-
+	};	
 
 
 	/**
@@ -116,6 +115,7 @@ public class CodealikeDashboard extends ViewPart {
 		this.context.getIdentityService().addObserver(authObserver);
 		this.trackingService = this.context.getTrackingService();
 		this.trackingService.addObserver(trackingObserver);
+		
 		this.cb = new Clipboard(Display.getCurrent());
 	}
 
@@ -171,7 +171,7 @@ public class CodealikeDashboard extends ViewPart {
 		
 		setSignedAsLabelText();
 
-		new Label(parent, SWT.NONE);
+		new Label(parent, SWT.NONE);		
 		new Label(parent, SWT.NONE);
 
 		Color gray = new Color(Display.getCurrent(), 225, 225, 225);
@@ -184,7 +184,7 @@ public class CodealikeDashboard extends ViewPart {
 	    trackingGroup.setLayout(new GridLayout(1, false));
 	    trackingText = new Text(trackingGroup, SWT.CENTER);
 	    trackingText.setFont(AVENIR_10);
-	    trackingText.setBackground(gray);
+	    trackingText.setBackground(gray);   
 	    
 	    new Label(this.trackingGroup, SWT.NONE);
 	    onOffButton = new CLabel(this.trackingGroup, SWT.CENTER);
@@ -230,7 +230,6 @@ public class CodealikeDashboard extends ViewPart {
 			showTrackedProjects();
 		}
 	}
-
 	
 	private void enableDisableTracking(Composite parent) {
 		Color green = parent.getDisplay().getSystemColor(SWT.COLOR_DARK_GREEN);
