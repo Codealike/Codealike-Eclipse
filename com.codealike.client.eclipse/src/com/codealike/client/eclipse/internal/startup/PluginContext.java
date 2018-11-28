@@ -2,7 +2,9 @@ package com.codealike.client.eclipse.internal.startup;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.util.Properties;
 import java.util.Random;
@@ -24,12 +26,15 @@ import org.osgi.service.prefs.BackingStoreException;
 import com.codealike.client.eclipse.CodealikeTrackerPlugin;
 import com.codealike.client.eclipse.api.ApiClient;
 import com.codealike.client.eclipse.api.ApiResponse;
+import com.codealike.client.eclipse.internal.dto.PluginSettingsInfo;
 import com.codealike.client.eclipse.internal.dto.SolutionContextInfo;
 import com.codealike.client.eclipse.internal.dto.Version;
+import com.codealike.client.eclipse.internal.model.ProjectSettings;
 import com.codealike.client.eclipse.internal.serialization.JodaPeriodModule;
 import com.codealike.client.eclipse.internal.services.IdentityService;
 import com.codealike.client.eclipse.internal.services.TrackingService;
 import com.codealike.client.eclipse.internal.tracking.code.ContextCreator;
+import com.codealike.client.eclipse.internal.utils.Configuration;
 import com.codealike.client.eclipse.internal.utils.LogManager;
 import com.codealike.client.eclipse.views.ErrorDialogView;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -39,10 +44,11 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 @SuppressWarnings("restriction")
 public class PluginContext {
 
-
+	public static final String VERSION = "0.4.3";
 	private static final String PLUGIN_PREFERENCES_QUALIFIER = "com.codealike.client.eclipse";
 	private static PluginContext _instance;
 	
+	private String ideName;
 	private Version protocolVersion;
 	private Properties properties;
 	private ObjectWriter jsonWriter;
@@ -54,7 +60,10 @@ public class PluginContext {
 	private IdentityService identityService;
 	private TrackingService trackingService;
 	private String instanceValue;
-	private File trackerFolder;
+	
+	private String machineName;
+
+	private Configuration configuration;
 	
 	public static final UUID UNASSIGNED_PROJECT = UUID.fromString("00000000-0000-0000-0000-0000000001");
 	
@@ -89,12 +98,34 @@ public class PluginContext {
 		this.instanceValue = String.valueOf(new Random(DateTime.now().getMillis()).nextInt(Integer.MAX_VALUE) + 1);
 		this.protocolVersion = new Version(0, 9);
 		this.properties = properties;
+		this.ideName = "eclipse";
+		this.machineName = findLocalHostNameOr("unknown");
+
+		// initialize configuration with required parameters
+		this.configuration = new Configuration(this.ideName, VERSION, this.instanceValue);
+		this.configuration.loadGlobalSettings();
+
+		// try to load plugin settings from server
+		ApiResponse<PluginSettingsInfo> pluginSettings = ApiClient.getPluginSettings();
+		if (pluginSettings.success()) {
+			this.configuration.loadPluginSettings(pluginSettings.getObject());
+		}
 	}
-	
+
+	public Configuration getConfiguration() {
+		return this.configuration;
+	}
+
+	public String getIdeName() {
+		return this.ideName;
+	}
+
 	public String getPluginVersion() {
-		if (Platform.getBundle(CodealikeTrackerPlugin.PLUGIN_ID) != null)
-			return Platform.getBundle(CodealikeTrackerPlugin.PLUGIN_ID).getVersion().toString();
-		return null;
+		return VERSION;
+	}
+
+	public String getMachineName() {
+		return machineName;
 	}
 	
 	public String getHomeFolder() {
@@ -113,16 +144,11 @@ public class PluginContext {
 
 	public void initializeContext() throws IOException {
 		this.trackingService = TrackingService.getInstance();
-
-		trackerFolder = new File(getHomeFolder() + getActivityLogLocation());
-		if (!trackerFolder.exists()) {
-			trackerFolder.mkdirs();
-		}
 	}
 
-	public UUID getOrCreateUUID(IProject project) {
+	private UUID tryGetLegacySolutionIdV1(IProject project) {
 		UUID solutionId = null;
-		
+
 		try {
 			String solutionIdString = null;
 			ProjectPreferences projectNode = getProjectPreferences(project);
@@ -134,7 +160,6 @@ public class PluginContext {
 					if (!registerProjectContext(solutionId, project.getName()) ) {
 						return null;
 					}
-					changeSolutionId(projectNode, solutionId);
 				}
 				else {
 					solutionId = UUID.fromString(solutionIdString);
@@ -144,12 +169,44 @@ public class PluginContext {
 			String projectName = project != null ? project.getName() : "";
         	LogManager.INSTANCE.logError(e, "Could not create UUID for project "+projectName);
 		}
-		
+
 		return solutionId;
 	}
 	
-	private String getActivityLogLocation() {
-		return getProperty("activity-log.path").replace(".", File.separator);
+	public UUID getOrCreateUUID(IProject project) {
+		Configuration configuration = PluginContext.getInstance().getConfiguration();
+		UUID solutionId = null;
+		
+		// try first to load codealike.json file from project folder
+		ProjectSettings projectSettings = configuration.loadProjectSettings(project.getLocation().toString());
+		
+		if (projectSettings.getProjectId() == null) {
+			// if configuration was not found in the expected place
+			// let's try to load configuration from older plugin versions
+			solutionId = tryGetLegacySolutionIdV1(project);
+			
+			if (solutionId != null) {
+				// if solution id was found by other method than
+				// loading project settings file from project folder
+				// we have to save a new project settings with
+				// generated information
+				projectSettings.setProjectId(solutionId);
+				projectSettings.setProjectName(project.getName());
+
+				// and save the file for future uses
+				configuration.saveProjectSettings(project.getLocation().toString(), projectSettings);
+			}
+			else {
+				// if we reached this branch
+				// it means not only no configuration was found
+				// but also we were not able to register a new
+				// configuration in server.
+				// log was saved by internal method
+				// nothing else to do here
+			}
+		}
+		
+		return projectSettings.getProjectId();
 	}
 
 	private ProjectPreferences getProjectPreferences(IProject project) {
@@ -158,13 +215,13 @@ public class PluginContext {
 		ProjectPreferences projectNode = (ProjectPreferences) projectScope.getNode(PLUGIN_PREFERENCES_QUALIFIER);
 		return projectNode;
 	}
-
-	private UUID changeSolutionId(ProjectPreferences projectNode, UUID solutionId) throws Exception,
-			BackingStoreException {
-
-		projectNode.put("solutionId", solutionId.toString());
-		projectNode.flush();
-		return solutionId;
+	
+	private String findLocalHostNameOr(String defaultName) {
+		try {
+			return InetAddress.getLocalHost().getHostName();
+		} catch (UnknownHostException e) { //see: http://stackoverflow.com/a/40702767/1117552
+			return defaultName;
+		}
 	}
 	
 	private UUID tryCreateUniqueId() {
@@ -316,10 +373,6 @@ public class PluginContext {
 
 	public String getInstanceValue() {
 		return instanceValue;
-	}
-
-	public File getTrackerFolder() {
-		return trackerFolder;
 	}
 
 	public Version getProtocolVersion() {

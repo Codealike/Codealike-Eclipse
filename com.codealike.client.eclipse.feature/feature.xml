@@ -2,7 +2,7 @@
 <feature
       id="com.codealike.client.eclipse.feature"
       label="Codealike Feature"
-      version="0.3.6.qualifier"
+      version="0.4.3"
       provider-name="CODEALIKE">
 
    <description url="http://www.codealike.com">

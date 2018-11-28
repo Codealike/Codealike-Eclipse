@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -56,6 +58,7 @@ import com.codealike.client.eclipse.internal.tracking.build.ResourceDeltaVisitor
 import com.codealike.client.eclipse.internal.tracking.code.ContextCreator;
 import com.codealike.client.eclipse.internal.utils.EditorUtils;
 import com.codealike.client.eclipse.internal.utils.LogManager;
+import com.codealike.client.eclipse.internal.utils.TrackingConsole;
 import com.codealike.client.eclipse.internal.utils.WorkbenchUtils;
 
 public class StateTracker {
@@ -64,95 +67,94 @@ public class StateTracker {
 	private ActivityState currentState;
 	private ActivityState lastState;
 	private final Display display;
-	private final Duration idleMinInterval;
-	private final int idleDetectionPeriod;
 	private Set<IDocument> registeredDocs;
 	protected IResource currentCompilationUnit;
 	private CodeContext lastCodeContext;
 	private ActivityEvent lastEvent;
 	private ContextCreator contextCreator;
-	private ScheduledThreadPoolExecutor idleDetectionExecutor;
-	
+	private ScheduledExecutorService idleDetectionExecutor;
+
 	/**
-	 * Listens to the build events. Since build is automatic by default, this will happen many times while working.
+	 * Listens to the build events. Since build is automatic by default, this will
+	 * happen many times while working.
 	 */
 	private final IResourceChangeListener buildEventsListener = new IResourceChangeListener() {
-		
+
 		@Override
 		public void resourceChanged(IResourceChangeEvent event) {
 			switch (event.getType()) {
-				case IResourceChangeEvent.PRE_BUILD : {
-					
-					try {
-						TrackingService trackingService = PluginContext.getInstance().getTrackingService();
-						
-						ResourceDeltaVisitor deltaVisitor = new ResourceDeltaVisitor();
-						event.getDelta().accept(deltaVisitor);
-						for (IProject project : deltaVisitor.getAffectedProjects()) {
-							if (!trackingService.isTracked(project)) {
-								return;
-							}
-							UUID projectId = trackingService.getTrackedProjects().get(project);
-							ActivityState buildState = ActivityState.createBuildState(projectId);
-							recorder.recordState(buildState);
-							
-							CodeContext context = contextCreator.createCodeContext(project);
-							ActivityEvent buildEvent = new BuildActivityEvent(projectId, ActivityType.BuildProject, context);
-							recorder.recordEvent(buildEvent);
-							
-							currentState = buildState;
-							lastEvent = buildEvent;
+			case IResourceChangeEvent.PRE_BUILD: {
+
+				try {
+					TrackingService trackingService = PluginContext.getInstance().getTrackingService();
+
+					ResourceDeltaVisitor deltaVisitor = new ResourceDeltaVisitor();
+					event.getDelta().accept(deltaVisitor);
+					for (IProject project : deltaVisitor.getAffectedProjects()) {
+						if (!trackingService.isTracked(project)) {
+							return;
 						}
+						UUID projectId = trackingService.getTrackedProjects().get(project);
+						ActivityState buildState = ActivityState.createBuildState(projectId);
+						recorder.recordState(buildState);
+
+						CodeContext context = contextCreator.createCodeContext(project);
+						ActivityEvent buildEvent = new BuildActivityEvent(projectId, ActivityType.BuildProject,
+								context);
+						recorder.recordEvent(buildEvent);
+
+						currentState = buildState;
+						lastEvent = buildEvent;
 					}
-					catch (Exception e) {
-						
-					}
-					
-					break;
+				} catch (Exception e) {
+
 				}
-				case IResourceChangeEvent.POST_BUILD : {
-						
-					try {
-						TrackingService trackingService = PluginContext.getInstance().getTrackingService();
-						
-						ResourceDeltaVisitor deltaVisitor = new ResourceDeltaVisitor();
-						event.getDelta().accept(deltaVisitor);
-						for (IProject project : deltaVisitor.getAffectedProjects()) {
-							if (!trackingService.isTracked(project)) {
-								return;
-							}
-							
-							List<IMarker> problems = EditorUtils.getCompilationErrors(project);
-							ActivityEvent buildEvent = null;
-							
-							CodeContext context = contextCreator.createCodeContext(project);
-							
-							UUID projectId = trackingService.getTrackedProjects().get(project);
-							if (problems != null && !problems.isEmpty()) {
-								buildEvent = new BuildActivityEvent(projectId, ActivityType.BuildProjectFailed, context);
-								recorder.recordEvent(buildEvent);
-								buildEvent = new BuildActivityEvent(projectId, ActivityType.BuildSolutionFailed, context);
-							}
-							else {
-								buildEvent = new BuildActivityEvent(projectId, ActivityType.BuildProjectSucceeded, context);
-								recorder.recordEvent(buildEvent);
-								buildEvent = new BuildActivityEvent(projectId, ActivityType.BuildSolutionSucceded, context);
-							}
-							
-							recorder.recordEvent(buildEvent);
-							lastEvent = buildEvent;
-							ActivityState state = ActivityState.createNullState(projectId);
-							recorder.recordState(state);
-							currentState = state;
+
+				break;
+			}
+			case IResourceChangeEvent.POST_BUILD: {
+
+				try {
+					TrackingService trackingService = PluginContext.getInstance().getTrackingService();
+
+					ResourceDeltaVisitor deltaVisitor = new ResourceDeltaVisitor();
+					event.getDelta().accept(deltaVisitor);
+					for (IProject project : deltaVisitor.getAffectedProjects()) {
+						if (!trackingService.isTracked(project)) {
+							return;
 						}
+
+						List<IMarker> problems = EditorUtils.getCompilationErrors(project);
+						ActivityEvent buildEvent = null;
+
+						CodeContext context = contextCreator.createCodeContext(project);
+
+						UUID projectId = trackingService.getTrackedProjects().get(project);
+						if (problems != null && !problems.isEmpty()) {
+							buildEvent = new BuildActivityEvent(projectId, ActivityType.BuildProjectFailed, context);
+							recorder.recordEvent(buildEvent);
+							buildEvent = new BuildActivityEvent(projectId, ActivityType.BuildSolutionFailed, context);
+						} else {
+							buildEvent = new BuildActivityEvent(projectId, ActivityType.BuildProjectSucceeded, context);
+							recorder.recordEvent(buildEvent);
+							buildEvent = new BuildActivityEvent(projectId, ActivityType.BuildSolutionSucceded, context);
+						}
+
+						recorder.recordEvent(buildEvent);
+						lastEvent = buildEvent;
+						ActivityState state = ActivityState.createNullState(projectId);
+						recorder.recordState(state);
+						currentState = state;
 					}
-					catch (Exception e) {
-						LogManager.INSTANCE.logError(e, "Problem recording post build event.");
-					}
-					
-					break;
+				} catch (Exception e) {
+					LogManager.INSTANCE.logError(e, "Problem recording post build event.");
 				}
-				default : {};
+
+				break;
+			}
+			default: {
+			}
+				;
 			}
 		}
 	};
@@ -171,32 +173,24 @@ public class StateTracker {
 		ActivityState state = ActivityState.NONE;
 		UUID projectId = PluginContext.UNASSIGNED_PROJECT;
 
-		if (event.getSource() instanceof IProcess)
-		{
-			if (event.getKind() == DebugEvent.TERMINATE 
-					&& currentState.getType() == ActivityType.Debugging)
-			{
+		if (event.getSource() instanceof IProcess) {
+			if (event.getKind() == DebugEvent.TERMINATE && currentState.getType() == ActivityType.Debugging) {
 				state = ActivityState.createNullState(projectId);
 			}
 		}
 		if (event.getSource() instanceof IDebugTarget) {
-			
+
 			// Records the start time of this launch:
-			if (event.getKind() == DebugEvent.CREATE
-					&& currentState.getType() != ActivityType.Debugging) {
+			if (event.getKind() == DebugEvent.CREATE && currentState.getType() != ActivityType.Debugging) {
 
 				state = ActivityState.createDebugState(projectId);
-			}
-			else if (event.getKind() == DebugEvent.TERMINATE) {
+			} else if (event.getKind() == DebugEvent.TERMINATE) {
 				state = ActivityState.createNullState(projectId);
 			}
 		} else if (event.getSource() instanceof IThread) {
-			if (event.getKind() == DebugEvent.SUSPEND
-					&& currentState.getType() != ActivityType.Debugging) {
+			if (event.getKind() == DebugEvent.SUSPEND && currentState.getType() != ActivityType.Debugging) {
 				state = ActivityState.createDebugState(PluginContext.UNASSIGNED_PROJECT);
-			}
-			else if (event.getKind() == DebugEvent.RESUME)
-			{
+			} else if (event.getKind() == DebugEvent.RESUME) {
 				state = ActivityState.createNullState(projectId);
 			}
 		}
@@ -221,9 +215,9 @@ public class StateTracker {
 		}
 
 	};
-	
+
 	private final ISelectionListener selectionListener = new ISelectionListener() {
-		
+
 		@Override
 		public void selectionChanged(IWorkbenchPart part, ISelection selection) {
 			if (part instanceof IEditorPart) {
@@ -231,7 +225,7 @@ public class StateTracker {
 			}
 		}
 	};
-	
+
 	private final IPartListener partsListener = new IPartListener() {
 
 		@Override
@@ -265,56 +259,57 @@ public class StateTracker {
 		}
 	};
 
-
 	private synchronized void trackDocumentFocus(final IWorkbenchPart part) {
 		if (!(part instanceof IEditorPart)) {
 			return;
 		}
-		
+
 		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
-			
+
 			@Override
 			public void run() {
 				try {
 					TrackingService trackingService = PluginContext.getInstance().getTrackingService();
-					IEditorPart editor = (IEditorPart)part;
+					IEditorPart editor = (IEditorPart) part;
 					IProject activeProject = EditorUtils.getActiveProject(editor);
-					
+
 					if (activeProject == null || !trackingService.isTracked(activeProject)) {
 						return;
 					}
-					
+
 					UUID projectId = trackingService.getTrackedProjects().get(activeProject);
-	
+
 					if (currentState.getType() != ActivityType.Coding || currentState.getProjectId() != projectId) {
-						
+
 						if (currentState.getType() != ActivityType.Debugging) {
 							currentState = ActivityState.createDesignState(projectId);
 							recorder.recordState(currentState);
 						}
 					}
-					
+
 					IResource focusedResource = EditorUtils.getActiveResource(editor);
 					if (focusedResource == null) {
 						return;
 					}
 					trackNewSelection(editor, focusedResource, projectId);
 				} catch (NonExistingResourceException e) {
-					LogManager.INSTANCE.logError(e, "Problem recording document focus. Cannot find the active resource.");
+					LogManager.INSTANCE.logError(e,
+							"Problem recording document focus. Cannot find the active resource.");
 				} catch (Exception e) {
 					LogManager.INSTANCE.logError(e, "Problem recording document focus.");
 				}
 			}
 		});
 	}
-	
-	private void trackNewSelection(IEditorPart editor, IResource focusedResource, UUID projectId) throws JavaModelException {
+
+	private void trackNewSelection(IEditorPart editor, IResource focusedResource, UUID projectId)
+			throws JavaModelException {
 		CodeContext currentCodeContext = contextCreator.createCodeContext(editor, projectId);
-		
+
 		if (!focusedResource.equals(currentCompilationUnit) || !currentCodeContext.equals(lastCodeContext)) {
 			ActivityEvent event = new ActivityEvent(projectId, ActivityType.DocumentFocus, currentCodeContext);
 			recorder.recordEvent(event);
-			
+
 			lastEvent = event;
 			currentCompilationUnit = focusedResource;
 			lastCodeContext = currentCodeContext;
@@ -339,36 +334,40 @@ public class StateTracker {
 						return;
 					}
 					UUID projectId = trackingService.getTrackedProjects().get(focusedResource.getProject());
-					
-					if (focusedResource.equals(currentCompilationUnit) && lastEvent != null && lastEvent.getType() != ActivityType.DocumentEdit) {
-						//Currently in design mode, so we need to save an editing event
-						event = new ActivityEvent(projectId, ActivityType.DocumentEdit, contextCreator.createCodeContext(editor, projectId));
+
+					if (focusedResource.equals(currentCompilationUnit) && lastEvent != null
+							&& lastEvent.getType() != ActivityType.DocumentEdit) {
+						// Currently in design mode, so we need to save an editing event
+						event = new ActivityEvent(projectId, ActivityType.DocumentEdit,
+								contextCreator.createCodeContext(editor, projectId));
 						recorder.recordEvent(event);
 					}
-					
+
 					if (lastEvent != null) {
 						lastEvent = event;
 					}
 				} catch (NonExistingResourceException e) {
-					LogManager.INSTANCE.logError(e, "Problem recording document edit. Cannot find the active resource.");
+					LogManager.INSTANCE.logError(e,
+							"Problem recording document edit. Cannot find the active resource.");
 				} catch (Exception e) {
 					LogManager.INSTANCE.logError(e, "Problem recording document edit.");
 				}
 			}
 		});
 	}
-	
+
 	public void startTrackingProject(IProject project, UUID projectId, DateTime startWorkspaceDate) {
-		ActivityEvent openSolutionEvent = new ActivityEvent(projectId, ActivityType.OpenSolution, contextCreator.createCodeContext(project));
+		ActivityEvent openSolutionEvent = new ActivityEvent(projectId, ActivityType.OpenSolution,
+				contextCreator.createCodeContext(project));
 		openSolutionEvent.setCreationTime(startWorkspaceDate);
 		ActivityState systemState = ActivityState.createSystemState(projectId);
 		systemState.setCreationTime(startWorkspaceDate);
-		
+
 		recorder.recordState(systemState);
 		recorder.recordEvent(openSolutionEvent);
 		ActivityState nullState = ActivityState.createNullState(projectId);
 		recorder.recordState(nullState);
-		
+
 		currentState = nullState;
 	}
 
@@ -382,7 +381,7 @@ public class StateTracker {
 			}
 		}
 	}
-	
+
 	private void deregisterWindow(IWorkbenchWindow window) {
 		window.getPartService().removePartListener(partsListener);
 		window.getSelectionService().removePostSelectionListener(selectionListener);
@@ -393,10 +392,10 @@ public class StateTracker {
 			}
 		}
 	}
-	
+
 	private void registerPart(final IWorkbenchPart part) {
 		if (part instanceof IEditorPart) {
-			IDocument doc = EditorUtils.getActiveDocument((IEditorPart)part);
+			IDocument doc = EditorUtils.getActiveDocument((IEditorPart) part);
 			if (doc != null) {
 				doc.addDocumentListener(documentListener);
 				if (!registeredDocs.contains(doc)) {
@@ -405,10 +404,10 @@ public class StateTracker {
 			}
 		}
 	}
-	
+
 	private void deregisterPart(IWorkbenchPart part) {
 		if (part instanceof IEditorPart) {
-			IDocument doc = EditorUtils.getActiveDocument((IEditorPart)part);
+			IDocument doc = EditorUtils.getActiveDocument((IEditorPart) part);
 			if (doc != null) {
 				registeredDocs.remove(doc);
 			}
@@ -425,14 +424,13 @@ public class StateTracker {
 			ActivityState newState;
 			if (lastState != null) {
 				newState = lastState.recreate();
-			}
-			else {
+			} else {
 				newState = ActivityState.createIdleState(PluginContext.UNASSIGNED_PROJECT);
 			}
 			lastState = currentState;
 			currentState = newState;
 			recorder.recordState(currentState);
-//			trackDocumentFocus(window.getPartService().getActivePart());
+			// trackDocumentFocus(window.getPartService().getActivePart());
 		}
 
 		@Override
@@ -457,17 +455,14 @@ public class StateTracker {
 		}
 	};
 
-	public StateTracker(Display disp, int idleDetectionPeriod,
-			Duration idleMinInterval) {
-		this.idleDetectionPeriod = idleDetectionPeriod;
-		this.idleMinInterval = idleMinInterval;
+	public StateTracker(Display disp) {
 		this.registeredDocs = new HashSet<IDocument>();
 		this.contextCreator = PluginContext.getInstance().getContextCreator();
 		display = disp;
 
 		recorder = new ActivitiesRecorder(PluginContext.getInstance());
 	}
-	
+
 	public void startTracking() {
 		DebugPlugin debug = DebugPlugin.getDefault();
 		debug.addDebugEventListener(debugEventListener);
@@ -477,13 +472,16 @@ public class StateTracker {
 		for (IWorkbenchWindow window : workbench.getWorkbenchWindows()) {
 			register(window);
 		}
-		
-		ResourcesPlugin.getWorkspace().addResourceChangeListener(buildEventsListener, IResourceChangeEvent.PRE_BUILD | IResourceChangeEvent.POST_BUILD);
+
+		ResourcesPlugin.getWorkspace().addResourceChangeListener(buildEventsListener,
+				IResourceChangeEvent.PRE_BUILD | IResourceChangeEvent.POST_BUILD);
 		startIdleDetection();
 	}
 
 	private void startIdleDetection() {
-
+		if (this.idleDetectionExecutor != null)
+			return;
+		
 		display.syncExec(new Runnable() {
 
 			@Override
@@ -494,35 +492,51 @@ public class StateTracker {
 
 		});
 
-		this.idleDetectionExecutor = new ScheduledThreadPoolExecutor(1);
+		this.idleDetectionExecutor = Executors.newScheduledThreadPool(1);
 		Runnable idlePeriodicTask = new Runnable() {
 
 			@Override
 			public void run() {
-				synchronized (this) {
-
-					if (currentState.getType() == ActivityType.Idle) {
-
-						if (currentState instanceof NullActivityState) {
-							currentState = ActivityState.createIdleState(PluginContext.UNASSIGNED_PROJECT);
-							recorder.recordState(currentState);
-						}
-						else {
-							return;
-						}
-
-					}
+				try {
+					TrackingConsole.getInstance().trackMessage("Idle detection task executed");
+					checkIdleStatus();
+				} catch (Exception e) {
+					TrackingConsole.getInstance().trackMessage("Idle detection task error " + e.getMessage());
 				}
 			}
 		};
-		
-		this.idleDetectionExecutor.scheduleAtFixedRate(idlePeriodicTask, idleDetectionPeriod,
-				idleDetectionPeriod, TimeUnit.MILLISECONDS);
+
+		int idleDetectionPeriod = PluginContext.getInstance().getConfiguration().getIdleCheckInterval();
+		this.idleDetectionExecutor.scheduleAtFixedRate(idlePeriodicTask, idleDetectionPeriod, idleDetectionPeriod, TimeUnit.MILLISECONDS);
+	}
+	
+	private void stopIdleDetection() {
+		if (this.idleDetectionExecutor != null) {
+			this.idleDetectionExecutor.shutdownNow();
+			this.idleDetectionExecutor = null;
+		}
+	}
+
+	private void checkIdleStatus() {
+		synchronized (this) {
+
+			if (currentState.getType() == ActivityType.Idle) {
+
+				if (currentState instanceof NullActivityState) {
+					currentState = ActivityState.createIdleState(PluginContext.UNASSIGNED_PROJECT);
+					recorder.recordState(currentState);
+				} else {
+					return;
+				}
+
+			}
+		}
 	}
 	
 	protected Listener userActivityListener = new Listener() {
 
-		//This listens to activity only inside the ide (probably is useful for activity outside the editor)
+		// This listens to activity only inside the ide (probably is useful for activity
+		// outside the editor)
 		@Override
 		public void handleEvent(Event event) {
 			if (currentState instanceof IdleActivityState) {
@@ -530,8 +544,10 @@ public class StateTracker {
 				DateTime now = DateTime.now();
 				Duration duration = new Duration(state.getLastActivity(), now);
 				state.setLastActivity(now);
-				
 
+				long idleMaxPeriodInSeconds = PluginContext.getInstance().getConfiguration().getIdleMinInterval()
+						/ 1000;
+				Duration idleMinInterval = Duration.standardMinutes(idleMaxPeriodInSeconds / 60);
 				if (duration.compareTo(idleMinInterval) < 0) {
 					currentState = ActivityState.createIdleState(PluginContext.UNASSIGNED_PROJECT);
 					recorder.recordState(currentState);
@@ -544,14 +560,12 @@ public class StateTracker {
 		DebugPlugin debug = DebugPlugin.getDefault();
 		debug.removeDebugEventListener(debugEventListener);
 		ResourcesPlugin.getWorkspace().removeResourceChangeListener(buildEventsListener);
-		
-		if (this.idleDetectionExecutor != null) {
-			this.idleDetectionExecutor.shutdown();
-		}
-		
+
+		stopIdleDetection();
+
 		IWorkbench workbench = PlatformUI.getWorkbench();
 		workbench.removeWindowListener(winListener);
-		
+
 		if (!display.isDisposed()) {
 			display.syncExec(new Runnable() {
 
@@ -568,8 +582,7 @@ public class StateTracker {
 	public FlushResult flush(String identity, String token) {
 		try {
 			return this.recorder.flush(identity, token);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			LogManager.INSTANCE.logError(e, "Couldn't send data to the server.");
 			return FlushResult.Report;
 		}

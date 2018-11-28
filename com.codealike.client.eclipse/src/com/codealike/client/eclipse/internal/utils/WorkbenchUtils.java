@@ -1,5 +1,7 @@
 package com.codealike.client.eclipse.internal.utils;
 
+import java.util.Observable;
+
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
@@ -13,7 +15,7 @@ import org.eclipse.ui.internal.PartSite;
 import com.codealike.client.eclipse.views.CodealikeDashboard;
 
 @SuppressWarnings("restriction")
-public class WorkbenchUtils {
+public class WorkbenchUtils  {
 
 	public static IWorkbenchWindow getActiveWindow() {
 		final IWorkbenchWindow[] win = new IWorkbenchWindow[1];
@@ -78,11 +80,9 @@ public class WorkbenchUtils {
 	public static void addMessageToStatusBar(final String message) {
 		new Thread() {
 			public void run() {
-
 				Runnable r = new Runnable() {
 					@Override
 					public void run() {
-						
 						try{							
 							IWorkbenchSite site = WorkbenchUtils.getActiveWindow().getActivePage().getActivePart().getSite();
 							
@@ -116,5 +116,6 @@ public class WorkbenchUtils {
 			}
 		}.start();
 	}
+	
 	
 }

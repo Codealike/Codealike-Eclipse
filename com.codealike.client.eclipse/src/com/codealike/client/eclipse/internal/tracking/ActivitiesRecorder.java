@@ -160,9 +160,9 @@ public class ActivitiesRecorder {
 			return FlushResult.Skip;
 		}
 		
-		List<ActivityInfo> activityInfoList = processor.getSerializableEntities(InetAddress.getLocalHost().getHostName(), 
-				context.getInstanceValue(), "eclipse", context.getPluginVersion());
-		String activityLogExtension = context.getProperty("activity-log.extension");
+		List<ActivityInfo> activityInfoList = processor.getSerializableEntities(context.getMachineName(), 
+				context.getInstanceValue(), context.getIdeName(), context.getPluginVersion());
+
 		if (!processor.isActivityValid(activityInfoList)) {
 			return FlushResult.Skip;
 		}
@@ -171,23 +171,24 @@ public class ActivitiesRecorder {
 			if (!info.isValid()) {
 				continue;
 			}
-			File cacheFolder = context.getTrackerFolder();
+			File cacheFolder = context.getConfiguration().getCachePath();
 			if (cacheFolder == null) {
 				LogManager.INSTANCE.logError("Could not access cache folder. It might not be created.");
 				continue;
 			}
 			FlushResult intermediateResult = trySendEntries(info, username, token);
 			if (intermediateResult == FlushResult.Succeded) {
-				for (final File fileEntry : cacheFolder.listFiles(new GenericExtensionFilter(activityLogExtension))) {
-					trySendEntriesOnFile(fileEntry, username, token);
+				for (final File fileEntry : cacheFolder.listFiles()) {
+					trySendEntriesOnFile(fileEntry.getName(), username, token);
 			    }
 				
-				if (Boolean.parseBoolean(context.getProperty("activity-log.trace-sent"))) {
-					String filename = String.format("%s\\%s%s", cacheFolder.getAbsolutePath(), info.getBatchId(), ".sent");
+				if (context.getConfiguration().getTrackSent()) {
+					//String filename = String.format("%s\\%s%s", cacheFolder.getAbsolutePath(), info.getBatchId(), ".sent");
+					File historyFile = context.getConfiguration().getHistoryFile();
 					
 					FileOutputStream stream = null;
 					try {
-						stream = new FileOutputStream(new File(filename));
+						stream = new FileOutputStream(historyFile);
 						ObjectWriter writer = context.getJsonWriter();
 						String json = writer.writeValueAsString(info);
 						stream.write(json.getBytes(Charset.forName("UTF-8")));
@@ -208,11 +209,12 @@ public class ActivitiesRecorder {
 				}
 			}
 			else {
-				String filename = String.format("%s\\%s%s", cacheFolder.getAbsolutePath(), info.getBatchId(), activityLogExtension);
+				//String filename = String.format("%s\\%s%s", cacheFolder.getAbsolutePath(), info.getBatchId(), activityLogExtension);
+				File cacheFile = context.getConfiguration().getCacheFile();
 				
 				FileOutputStream stream = null;
 				try {
-					stream = new FileOutputStream(new File(filename));
+					stream = new FileOutputStream(cacheFile);
 					ObjectWriter writer = context.getJsonWriter();
 					String json = writer.writeValueAsString(info);
 					stream.write(json.getBytes(Charset.forName("UTF-8")));
@@ -240,9 +242,10 @@ public class ActivitiesRecorder {
 		return result;
 	}
 
-	private void trySendEntriesOnFile(File fileEntry, String username, String token) {
+	private void trySendEntriesOnFile(String fileName, String username, String token) {
 		try {
 			FlushResult result = FlushResult.Skip;
+			File fileEntry = new File(context.getConfiguration().getCachePath(), fileName);
 			try {
 				ActivityInfo activityInfo = context.getJsonMapper().readValue(new FileInputStream(fileEntry), ActivityInfo.class);
 				ApiClient client = ApiClient.tryCreateNew(username, token);
@@ -268,11 +271,11 @@ public class ActivitiesRecorder {
 				switch (result) {
 					case Succeded:
 					{
-						fileEntry.renameTo(new File(fileEntry.getAbsolutePath().replaceFirst("[.][^.]+$", ".sent")));
+						fileEntry.renameTo(new File(context.getConfiguration().getHistoryPath(), fileName));
 					}
 					case Report:
 					{
-						fileEntry.renameTo(new File(fileEntry.getAbsolutePath().replaceFirst("[.][^.]+$", ".error")));
+						fileEntry.renameTo(new File(context.getConfiguration().getHistoryPath(), fileName + ".error"));
 						break;
 					}
 					case Skip: {

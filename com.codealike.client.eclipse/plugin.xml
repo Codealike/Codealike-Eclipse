@@ -2,11 +2,27 @@
 <?eclipse version="3.4"?>
 <plugin>
 
-   <extension
-         point="org.eclipse.ui.views">
+	<extension
+         point="org.eclipse.ui.commands">
       <category
-            name="Codealike"
-            id="com.codealike.client.eclipse">
+            name="Codealike Settings"
+            id="com.codealike.client.commands.settings">
+      </category>
+      <command
+            name="Codealike Settings"
+            categoryId="com.codealike.client.commands.settings"
+            id="com.codealike.client.commands.settingsCommand">
+      </command>
+   </extension>
+  <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            commandId="com.codealike.client.commands.settingsCommand"
+            class="com.codealike.client.commands.SettingsCommandHandler">
+      </handler>
+   </extension>
+   <extension point="org.eclipse.ui.views">
+      <category name="Codealike" id="com.codealike.client.eclipse">
       </category>
       <view
             allowMultiple="false"
@@ -23,5 +39,20 @@
             class="com.codealike.client.eclipse.internal.startup.Startup">
       </startup>
    </extension>
-
+	<extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="menu:org.eclipse.ui.main.menu?after=additions">
+         <menu
+               label="Codealike"
+               mnemonic="C"
+               id="com.codealike.client.menus.settings">
+            <command
+                  commandId="com.codealike.client.commands.settingsCommand"
+                  mnemonic="S"
+                  id="com.codealike.client.menus.settingsCommand">
+            </command>
+         </menu>
+      </menuContribution>
+   </extension>
 </plugin>

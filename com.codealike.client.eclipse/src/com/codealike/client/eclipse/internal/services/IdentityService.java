@@ -14,6 +14,7 @@ import com.codealike.client.eclipse.internal.dto.UserConfigurationInfo;
 import com.codealike.client.eclipse.internal.model.Profile;
 import com.codealike.client.eclipse.internal.model.TrackActivity;
 import com.codealike.client.eclipse.internal.startup.PluginContext;
+import com.codealike.client.eclipse.internal.utils.Configuration;
 import com.codealike.client.eclipse.internal.utils.LogManager;
 import com.codealike.client.eclipse.internal.utils.WorkbenchUtils;
 
@@ -47,18 +48,22 @@ public class IdentityService extends Observable {
 	}
 
 	public boolean login(String identity, String token, boolean storeCredentials, boolean rememberMe) {
-		WorkbenchUtils.addMessageToStatusBar("Codealike is connecting...");
 		if (this.isAuthenticated) {
+			WorkbenchUtils.addMessageToStatusBar("Codealike is connected.");
+			
 			setChanged();
 			notifyObservers();
 			return true;
 		}
 		try {
+			WorkbenchUtils.addMessageToStatusBar("Codealike is connecting...");
+			
 			ApiClient apiClient = ApiClient.tryCreateNew(identity, token);
 			ApiResponse<Void> response = apiClient.tokenAuthenticate();
 			
 			if (response.success()) {
-
+				WorkbenchUtils.addMessageToStatusBar("Codealike is connected.");
+				
 				this.identity = identity;
 				this.token = token;
 				if (storeCredentials) {
@@ -98,21 +103,27 @@ public class IdentityService extends Observable {
 	}
 
 	private void storeCredentials(String identity, String token) {
-        ISecurePreferences secureStorage = SecurePreferencesFactory
-                .getDefault();
-        ISecurePreferences node = secureStorage.node("codealike");
-        try {
-          node.put("identity", identity, true);
-          node.put("token", token, true);
-          this.credentialsStored = true;
-        } catch (StorageException e) {
-        	LogManager.INSTANCE.logError(e, "Could not store credentials.");
+		// save user token to global configuration file
+		Configuration configuration = PluginContext.getInstance().getConfiguration();
+		configuration.setUserToken(identity + "/" + token);
+		configuration.saveCurrentGlobalSettings();
+		
+		// remove fallback ones also!
+        ISecurePreferences secureStorage = SecurePreferencesFactory.getDefault();
+        if (secureStorage.nodeExists("codealike")) {
+        	ISecurePreferences node = secureStorage.node("codealike");
+        	node.remove("identity");
+        	node.remove("token");
         }
 	}
 	
 	private void removeStoredCredentials() {
-        ISecurePreferences secureStorage = SecurePreferencesFactory
-                .getDefault();
+		Configuration configuration = PluginContext.getInstance().getConfiguration();
+		configuration.setUserToken(null);
+		configuration.saveCurrentGlobalSettings();
+		
+		// remove fallback ones also!
+        ISecurePreferences secureStorage = SecurePreferencesFactory.getDefault();
         if (secureStorage.nodeExists("codealike")) {
         	ISecurePreferences node = secureStorage.node("codealike");
         	node.remove("identity");
@@ -122,19 +133,46 @@ public class IdentityService extends Observable {
 	}
 	
 	public boolean tryLoginWithStoredCredentials() {
-        ISecurePreferences secureStorage = SecurePreferencesFactory
-                .getDefault();
-        if (secureStorage.nodeExists("codealike")) {
-            ISecurePreferences node = secureStorage.node("codealike");
-            try {
-              String identity = node.get("identity", "");
-              String token = node.get("token", "");
-              return login(identity, token, false, false);
-            } catch (StorageException e) {
-            	LogManager.INSTANCE.logError(e, "Could not load stored credentials.");
-              return false;
-            }
-        }
+		Configuration configuration = PluginContext.getInstance().getConfiguration();
+		String identity = "";
+		String token = "";
+		
+		// if loaded configuration has no user token, try to fallback to previows store
+		if (configuration.getUserToken() == null || configuration.getUserToken().isEmpty()) {
+			// fallback information
+	        ISecurePreferences secureStorage = SecurePreferencesFactory.getDefault();
+	        if (secureStorage.nodeExists("codealike")) {
+        		ISecurePreferences node = secureStorage.node("codealike");
+
+        		try {
+					identity = node.get("identity", "");
+					token = node.get("token", "");
+				} catch (StorageException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        		
+        		// if information found by fallback mechanism
+    			// lets save that configuration for future use
+    			if (identity != "" && token != "") {
+    				configuration.setUserToken(identity + "/" + token);
+    				configuration.saveCurrentGlobalSettings();
+
+    				// remove fallback ones also!
+    	        	node.remove("identity");
+    	        	node.remove("token");
+    			}
+	        }
+		}
+		else {
+			String[] split = configuration.getUserToken().split("/");
+			identity = split[0];
+			token = split[1];
+		}      
+		
+		if (identity != "" && token != "")
+			return login(identity, token, false, false);
+		
         return false;
 	}
 
