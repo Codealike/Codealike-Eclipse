@@ -76,7 +76,7 @@ public class CodealikeDashboard extends ViewPart {
 			if (o == context.getIdentityService()) {
 				setSignedAsLabelText();
 				if (context.getIdentityService().isAuthenticated()) {
-					showTrackedProjects();
+					//showTrackedProjects();
 					signedAsLabel.getParent().layout();
 					signOut.setVisible(true);
 				}
@@ -227,7 +227,7 @@ public class CodealikeDashboard extends ViewPart {
 		activeTable.setBackground(gray);
 	    
 		if (context.isAuthenticated()) {
-			showTrackedProjects();
+			//showTrackedProjects();
 		}
 	}
 	
@@ -289,7 +289,7 @@ public class CodealikeDashboard extends ViewPart {
 		}
 	}
 
-	private void showTrackedProjects() {
+	/*private void showTrackedProjects() {
 		// use ObservableListContentProvider
 		viewer.setContentProvider(new ObservableListContentProvider());
 
@@ -302,7 +302,7 @@ public class CodealikeDashboard extends ViewPart {
 		hookContextMenu();
 		
 		resizeTable(viewer.getTable());
-	}
+	}*/
 	
 	private static void resizeColumn(TableColumn tableColumn)
 	{
