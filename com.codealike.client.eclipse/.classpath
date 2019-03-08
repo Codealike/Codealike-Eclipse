@@ -7,7 +7,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/jackson-core-2.2.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jackson-databind-2.2.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/joda-time-2.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/javax.inject-2.2.0-b14.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/cglib-2.2.0-b14.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/guava-14.0.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/hk2-api-2.2.0-b14.jar"/>
@@ -25,8 +24,5 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/javax.ws.rs-api-2.0.jar"/>
-	<classpathentry kind="lib" path="lib/jersey-client.jar"/>
-	<classpathentry kind="lib" path="lib/jersey-common.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
