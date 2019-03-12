@@ -132,13 +132,15 @@ public class ApiClient<Y> {
 	}
 
 	public ApiResponse<SolutionContextInfo> getSolutionContext(UUID projectId) {
-		return doGet("solution", SolutionContextInfo.class);
+		return doGet(String.format("solution/%s", projectId.toString()), SolutionContextInfo.class);
 	}
 	
 	private <T> ApiResponse<T> doGet(String route, Class<T> type)
 	{
+		ObjectMapper mapper = new ObjectMapper();
+		
 		try {
-			HttpResponse<T> response = null;
+			HttpResponse<String> response = null;
 			try {
 				response = Unirest.get("https://codealike.com/api/v2/{route}")
 						  .header("accept", "application/json")
@@ -147,10 +149,16 @@ public class ApiClient<Y> {
 						  .header(X_EAUTH_TOKEN_HEADER, this.token)
 						  .header(X_EAUTH_CLIENT_HEADER, "eclipse")
 						  .routeParam("route", route)
-						  .asObject(type);
+						  .asString();
 				
 				if (response.getStatus() == 200) {
-					T responseObject = response.getBody();
+					T responseObject = null;
+					if (type != String.class) {
+						responseObject = mapper.readValue(response.getBody(), type);
+					} else {
+						responseObject = (T) "OK";
+					}
+					
 					if (responseObject != null) {
 						return new ApiResponse<T>(
 								response.getStatus(), response.getStatusText(), responseObject);
@@ -158,6 +166,7 @@ public class ApiClient<Y> {
 						return new ApiResponse<T>(ApiResponse.Status.ClientError,
 								"Problem parsing data from the server.");
 					}
+
 				} else {
 					return new ApiResponse<T>(response.getStatus(), response.getStatusText());
 				}
