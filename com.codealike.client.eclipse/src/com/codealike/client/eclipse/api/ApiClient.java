@@ -108,17 +108,20 @@ public class ApiClient<Y> {
 	*/
 	
 	public static ApiResponse<PluginSettingsInfo> getPluginSettings() {
+		ObjectMapper mapper = new ObjectMapper();
+		
 		try {
-			HttpResponse<PluginSettingsInfo> response = Unirest.get("https://codealike.com/api/v2/public/PluginsConfiguration")
+			HttpResponse<String> response = Unirest.get("https://codealike.com/api/v2/public/PluginsConfiguration")
 					  .header("accept", "application/json")
 					  .header("Content-Type", "application/json")
-					  .asObject(PluginSettingsInfo.class);
+					  .asString();
 			
 			if (response.getStatus() == 200) {
-				PluginSettingsInfo pluginSettingsInfo = response.getBody();
-				if (pluginSettingsInfo != null) {
+				String cleanJson = response.getBody().substring(1, response.getBody().length()-1).replace("\\", "");
+				PluginSettingsInfo responseObject = mapper.readValue(cleanJson, PluginSettingsInfo.class);
+				if (responseObject != null) {
 					return new ApiResponse<PluginSettingsInfo>(
-							response.getStatus(), response.getStatusText(), pluginSettingsInfo);
+							response.getStatus(), response.getStatusText(), responseObject);
 				} else {
 					return new ApiResponse<PluginSettingsInfo>(ApiResponse.Status.ClientError,
 							"Problem parsing data from the server.");
@@ -150,29 +153,30 @@ public class ApiClient<Y> {
 						  .header(X_EAUTH_CLIENT_HEADER, "eclipse")
 						  .routeParam("route", route)
 						  .asString();
-				
-				if (response.getStatus() == 200) {
-					T responseObject = null;
-					if (type != String.class) {
-						responseObject = mapper.readValue(response.getBody(), type);
-					} else {
-						responseObject = (T) "OK";
-					}
-					
-					if (responseObject != null) {
-						return new ApiResponse<T>(
-								response.getStatus(), response.getStatusText(), responseObject);
-					} else {
-						return new ApiResponse<T>(ApiResponse.Status.ClientError,
-								"Problem parsing data from the server.");
-					}
-
-				} else {
-					return new ApiResponse<T>(response.getStatus(), response.getStatusText());
-				}
 			} catch (Exception e) {
 				return new ApiResponse<T>(ApiResponse.Status.ConnectionProblems);
 			}
+			
+			if (response.getStatus() == 200) {
+				T responseObject = null;
+				if (type != String.class) {
+					responseObject = mapper.readValue(response.getBody(), type);
+				} else {
+					responseObject = (T) "OK";
+				}
+				
+				if (responseObject != null) {
+					return new ApiResponse<T>(
+							response.getStatus(), response.getStatusText(), responseObject);
+				} else {
+					return new ApiResponse<T>(ApiResponse.Status.ClientError,
+							"Problem parsing data from the server.");
+				}
+
+			} else {
+				return new ApiResponse<T>(response.getStatus(), response.getStatusText());
+			}
+
 		} catch (Exception e) {
 			return new ApiResponse<T>(ApiResponse.Status.ClientError,
 					String.format("Problem parsing data from the server. %s",
