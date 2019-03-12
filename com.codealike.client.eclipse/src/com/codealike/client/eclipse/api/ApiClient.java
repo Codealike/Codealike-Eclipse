@@ -18,6 +18,7 @@ import com.codealike.client.eclipse.internal.startup.PluginContext;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.request.HttpRequest;
@@ -31,6 +32,7 @@ public class ApiClient<Y> {
 
 	private String identity;
 	private String token;
+	private ObjectMapper mapper;
 
 	public static ApiClient tryCreateNew(String identity, String token) {
 		return new ApiClient(identity, token);
@@ -43,6 +45,9 @@ public class ApiClient<Y> {
 	protected ApiClient() {
 		this.identity = "";
 		this.token = "";
+		
+		mapper = new ObjectMapper();
+		mapper.registerModule(new JodaModule());
 	}
 
 	protected ApiClient(String identity, String token) {
@@ -109,7 +114,7 @@ public class ApiClient<Y> {
 	
 	public static ApiResponse<PluginSettingsInfo> getPluginSettings() {
 		ObjectMapper mapper = new ObjectMapper();
-		
+
 		try {
 			HttpResponse<String> response = Unirest.get("https://codealike.com/api/v2/public/PluginsConfiguration")
 					  .header("accept", "application/json")
@@ -138,10 +143,7 @@ public class ApiClient<Y> {
 		return doGet(String.format("solution/%s", projectId.toString()), SolutionContextInfo.class);
 	}
 	
-	private <T> ApiResponse<T> doGet(String route, Class<T> type)
-	{
-		ObjectMapper mapper = new ObjectMapper();
-		
+	private <T> ApiResponse<T> doGet(String route, Class<T> type) {
 		try {
 			HttpResponse<String> response = null;
 			try {
@@ -184,7 +186,7 @@ public class ApiClient<Y> {
 		}
 	}
 	
-	private <T> ApiResponse<T> doPost(String route, Class<T> type, Object payload)
+	private <T> ApiResponse<T> doPost(String route, Class<T> type, String payload)
 	{
 		try {
 			HttpResponse<String> response = null;
@@ -219,9 +221,19 @@ public class ApiClient<Y> {
 	}
 
 	public ApiResponse<String> registerProjectContext(UUID projectId, String name) {
-		//try {
+		try {
 			SolutionContextInfo solutionContext = new SolutionContextInfo(projectId, name);
-			return doPost("solution", String.class, solutionContext);
+	
+			ObjectWriter writer = PluginContext.getInstance().getJsonWriter();
+			String solutionAsJson = writer.writeValueAsString(solutionContext);
+			
+			return doPost("solution", String.class, solutionAsJson);
+		} catch (JsonProcessingException e) {
+			return new ApiResponse<String>(ApiResponse.Status.ClientError,
+					String.format("Problem parsing data from the server. %s",
+							e.getMessage()));
+		}
+		
 			//WebTarget target = apiTarget.path("solution");
 
 			//ObjectWriter writer = PluginContext.getInstance().getJsonWriter();
@@ -247,8 +259,15 @@ public class ApiClient<Y> {
 	}
 
 	public ApiResponse<String> postActivityInfo(ActivityInfo info) {
-		return doPost("activity", String.class, info);
-
+		try {
+			ObjectWriter writer = PluginContext.getInstance().getJsonWriter();
+			String activityInfoAsJson = writer.writeValueAsString(info);
+			return doPost("activity", String.class, activityInfoAsJson);
+		} catch (JsonProcessingException e) {
+			return new ApiResponse<String>(ApiResponse.Status.ClientError,
+					String.format("Problem parsing data from the server. %s",
+							e.getMessage()));
+		}
 		/*try {
 			WebTarget target = apiTarget.path("activity");
 
