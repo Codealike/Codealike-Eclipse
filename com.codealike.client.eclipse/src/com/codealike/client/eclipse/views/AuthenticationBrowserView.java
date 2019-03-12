@@ -162,7 +162,7 @@ public class AuthenticationBrowserView {
 	}
 	
 	public void show(String url, boolean showError) {
-		try {
+		/*try {
 			ApiClient client = ApiClient.tryCreateNew();
 			ApiResponse<Void> response = client.health();
 			if (response.connectionTimeout() || response.error()) {
@@ -186,7 +186,7 @@ public class AuthenticationBrowserView {
 		if (browserShell != null) {
 			browserShell.open();
 			browser.setUrl(url);
-		}
+		}*/
 	}
 	
 	

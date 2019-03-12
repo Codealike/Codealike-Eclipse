@@ -1,18 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry exported="true" kind="lib" path="lib/httpcore-4.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/httpclient-4.3.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/log4j-1.2.17.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jackson-annotations-2.2.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jackson-core-2.2.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jackson-databind-2.2.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/joda-time-2.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/javax.inject-2.2.0-b14.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/cglib-2.2.0-b14.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-codec-1.9.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-logging-1.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/guava-14.0.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/hk2-api-2.2.0-b14.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/hk2-locator-2.2.0-b14.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/hk2-utils-2.2.0-b14.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/httpasyncclient-4.1.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/httpclient-4.5.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/httpcore-4.4.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/httpcore-nio-4.4.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/httpmime-4.5.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jackson-annotations-2.2.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jackson-core-2.2.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jackson-databind-2.2.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/joda-time-2.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/json-20160212.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/log4j-1.2.17.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/unirest-java-1.4.9.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.pde.core.requiredPlugins">
 		<accessrules>
@@ -25,8 +31,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/javax.ws.rs-api-2.0.jar"/>
-	<classpathentry kind="lib" path="lib/jersey-client.jar"/>
-	<classpathentry kind="lib" path="lib/jersey-common.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

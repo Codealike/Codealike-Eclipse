@@ -55,50 +55,46 @@ public class IdentityService extends Observable {
 			notifyObservers();
 			return true;
 		}
-		try {
-			WorkbenchUtils.addMessageToStatusBar("Codealike is connecting...");
+
+		WorkbenchUtils.addMessageToStatusBar("Codealike is connecting...");
+		
+		ApiClient apiClient = ApiClient.tryCreateNew(identity, token);
+		ApiResponse<String> response = apiClient.tokenAuthenticate();
+		
+		if (response.success()) {
+			WorkbenchUtils.addMessageToStatusBar("Codealike is connected.");
 			
-			ApiClient apiClient = ApiClient.tryCreateNew(identity, token);
-			ApiResponse<Void> response = apiClient.tokenAuthenticate();
-			
-			if (response.success()) {
-				WorkbenchUtils.addMessageToStatusBar("Codealike is connected.");
-				
-				this.identity = identity;
-				this.token = token;
-				if (storeCredentials) {
-					if (rememberMe) {
-						storeCredentials(identity, token);
-					}
-					else {
-						removeStoredCredentials();
-					}
+			this.identity = identity;
+			this.token = token;
+			if (storeCredentials) {
+				if (rememberMe) {
+					storeCredentials(identity, token);
 				}
-				
-				ApiResponse<ProfileInfo> profileResponse = apiClient.getProfile(identity);
-				if (profileResponse.success())
-				{
-					ProfileInfo profile = profileResponse.getObject();
-					this.profile = new Profile(this.identity, profile.getFullName(), profile.getDisplayName(), 
-								profile.getAddress(), profile.getState(), profile.getCountry(), profile.getAvatarUri(), profile.getEmail());
+				else {
+					removeStoredCredentials();
 				}
-				
-				ApiResponse<UserConfigurationInfo> configResponse = apiClient.getUserConfiguration(identity);
-				if (configResponse.success())
-				{
-					UserConfigurationInfo config = configResponse.getObject();
-					this.trackActivities = config.getTrackActivities();
-				}
-				this.isAuthenticated = true;
-				setChanged();
-				notifyObservers();
-				return true;
 			}
 			
+			ApiResponse<ProfileInfo> profileResponse = apiClient.getProfile(identity);
+			if (profileResponse.success())
+			{
+				ProfileInfo profile = profileResponse.getObject();
+				this.profile = new Profile(this.identity, profile.getFullName(), profile.getDisplayName(), 
+							profile.getAddress(), profile.getState(), profile.getCountry(), profile.getAvatarUri(), profile.getEmail());
+			}
+			
+			ApiResponse<UserConfigurationInfo> configResponse = apiClient.getUserConfiguration(identity);
+			if (configResponse.success())
+			{
+				UserConfigurationInfo config = configResponse.getObject();
+				this.trackActivities = config.getTrackActivities();
+			}
+			this.isAuthenticated = true;
+			setChanged();
+			notifyObservers();
+			return true;
 		}
-		catch (KeyManagementException e){
-			LogManager.INSTANCE.logError(e, "Could not log in. There was a problem with SSL configuration.");
-		}
+		
 		return false;
 	}
 

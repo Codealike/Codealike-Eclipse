@@ -110,8 +110,8 @@ public class CodealikeTrackerPlugin extends AbstractUIPlugin {
 		}
 		catch (Exception e)
 		{
-			ApiClient client = ApiClient.tryCreateNew();
-			client.logHealth(new HealthInfo(e, "Plugin could not start.", "eclipse", HealthInfoType.Error, pluginContext.getIdentityService().getIdentity()));
+			//ApiClient client = ApiClient.tryCreateNew();
+			//client.logHealth(new HealthInfo(e, "Plugin could not start.", "eclipse", HealthInfoType.Error, pluginContext.getIdentityService().getIdentity()));
 			LogManager.INSTANCE.logError(e, "Couldn't start plugin.");
 		}
 	}
@@ -171,6 +171,9 @@ public class CodealikeTrackerPlugin extends AbstractUIPlugin {
 		if (pluginContext != null && pluginContext.getTrackingService() != null) {
 			pluginContext.getTrackingService().stopTracking(false);
 		}
+		
+		// ensure we dispose Unirest resources
+		ApiClient.Dispose();
 		
 		plugin = null;
 		super.stop(context);

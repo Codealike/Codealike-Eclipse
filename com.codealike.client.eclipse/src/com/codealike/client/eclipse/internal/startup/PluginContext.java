@@ -226,14 +226,7 @@ public class PluginContext {
 	
 	private UUID tryCreateUniqueId() {
 		UUID solutionId = UUID.randomUUID();
-		ApiClient client;
-		try {
-			client = ApiClient.tryCreateNew(this.identityService.getIdentity(), this.identityService.getToken());
-		}
-		catch (KeyManagementException e) {
-			LogManager.INSTANCE.logError(e, "Could not create unique Id synchronized with the server. There was a problem with SSL configuration.");
-			return solutionId;
-		}
+		ApiClient client = ApiClient.tryCreateNew(this.identityService.getIdentity(), this.identityService.getToken());
 		ApiResponse<SolutionContextInfo> response = client.getSolutionContext(solutionId);
 		if (response.connectionTimeout()) {
 			LogManager.INSTANCE.logInfo("Communication problems running in offline mode.");
@@ -249,14 +242,8 @@ public class PluginContext {
 	}
 	
 	public boolean registerProjectContext(UUID solutionId, String projectName) throws Exception {
-		ApiClient client;
-		try {
-			client = ApiClient.tryCreateNew(this.identityService.getIdentity(), this.identityService.getToken());
-		}
-		catch (KeyManagementException e) {
-			LogManager.INSTANCE.logError(e, "Could not register unique project context in the remote server. There was a problem with SSL configuration.");
-			return false;
-		}
+		ApiClient client = ApiClient.tryCreateNew(this.identityService.getIdentity(), this.identityService.getToken());
+
 		ApiResponse<SolutionContextInfo> solutionInfoResponse = client.getSolutionContext(solutionId);
 		if (solutionInfoResponse.notFound()) {
 			ApiResponse<Void> response = client.registerProjectContext(solutionId, projectName);
@@ -277,7 +264,8 @@ public class PluginContext {
 	}
 	
 	public boolean checkVersion() {
-		ApiClient client;
+		return true;
+		/*ApiClient client;
 		try {
 			client = ApiClient.tryCreateNew();
 		}
@@ -314,7 +302,7 @@ public class PluginContext {
 			
 			return false;
 		}
-		return true;
+		return true;*/
 	}
 	
 	private void showIcompatibleVersionDialog() {
