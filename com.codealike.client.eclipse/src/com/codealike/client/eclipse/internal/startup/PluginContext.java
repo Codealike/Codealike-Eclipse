@@ -3,9 +3,7 @@ package com.codealike.client.eclipse.internal.startup;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.URL;
 import java.net.UnknownHostException;
-import java.security.KeyManagementException;
 import java.util.Properties;
 import java.util.Random;
 import java.util.UUID;
@@ -14,16 +12,11 @@ import org.eclipse.core.internal.resources.ProjectPreferences;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.ui.PlatformUI;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
-import org.osgi.service.prefs.BackingStoreException;
-
-import com.codealike.client.eclipse.CodealikeTrackerPlugin;
 import com.codealike.client.eclipse.api.ApiClient;
 import com.codealike.client.eclipse.api.ApiResponse;
 import com.codealike.client.eclipse.internal.dto.PluginSettingsInfo;
@@ -36,7 +29,6 @@ import com.codealike.client.eclipse.internal.services.TrackingService;
 import com.codealike.client.eclipse.internal.tracking.code.ContextCreator;
 import com.codealike.client.eclipse.internal.utils.Configuration;
 import com.codealike.client.eclipse.internal.utils.LogManager;
-import com.codealike.client.eclipse.views.ErrorDialogView;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -261,66 +253,6 @@ public class PluginContext {
 			LogManager.INSTANCE.logInfo("Communication problems running in offline mode.");
 		}
 		return false;
-	}
-	
-	public boolean checkVersion() {
-		return true;
-		/*ApiClient client;
-		try {
-			client = ApiClient.tryCreateNew();
-		}
-		catch (KeyManagementException e)
-		{
-			LogManager.INSTANCE.logError(e, "Could not access remote server. There was a problem with SSL configuration.");
-			return false;
-		}
-		
-		ApiResponse<Version> response = client.version();
-		if (response.success()) {
-			Version version = response.getObject();
-			Version expectedVersion = getProtocolVersion();
-			if (expectedVersion.getMajor() < version.getMajor()) {
-				showIcompatibleVersionDialog();
-				return false;
-			}
-			if (expectedVersion.getMinor() < version.getMinor()) {
-				showIcompatibleVersionDialog();
-				return false;
-			}
-			
-			return true;
-		}
-		else if (!response.connectionTimeout()) {
-			LogManager.INSTANCE.logError(String.format("Couldn't check plugin version (Status code=%s)", response.getStatus()));
-			
-			String title = "Houston... I have the feeling we messed up the specs.";
-			String text = "If the problem continues, radio us for assistance.";
-			if (PlatformUI.getWorkbench()!=null) {
-				ErrorDialogView dialog = new ErrorDialogView(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), title, text, "Roger that.", "images/LunarCat.png");
-				dialog.open();
-			}
-			
-			return false;
-		}
-		return true;*/
-	}
-	
-	private void showIcompatibleVersionDialog() {
-		String title = "This version is not updated";
-		String text = "Click below to be on the bleeding edge and enjoy an improved version of Codealike.";
-		ErrorDialogView dialog = new ErrorDialogView(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), title, text, "Download the latest.", "images/bigCodealike.jpg",
-			new Runnable() {
-				
-				@Override
-				public void run() {
-					try {
-						PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(PluginContext.getInstance().getProperty("codealike.server.url")+"/Public/Home/Download"));
-					} catch (Exception e) {
-						LogManager.INSTANCE.logError(e, "Couldn't open browser to download new version of plugin.");
-					}
-				}
-		});
-		dialog.open();
 	}
 	
 	public String getProperty(String key) {

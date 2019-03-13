@@ -58,59 +58,6 @@ public class ApiClient<Y> {
 			this.token = token;
 		}
 	}
-
-	/*
-	public ApiResponse<Void> health() {
-		try {
-			WebTarget target = apiTarget.path("health");
-
-			Invocation.Builder invocationBuilder = target
-					.request(MediaType.APPLICATION_JSON);
-			Response response = invocationBuilder.get();
-			return new ApiResponse<Void>(response.getStatus(), response
-					.getStatusInfo().getReasonPhrase());
-		} catch (ProcessingException e) {
-			if (e.getCause() != null
-					&& e.getCause() instanceof ConnectException) {
-				return new ApiResponse<Void>(ApiResponse.Status.ConnectionProblems);
-			} else {
-				return new ApiResponse<Void>(ApiResponse.Status.ClientError);
-			}
-		}
-	}
-	
-	public ApiResponse<Void> logHealth(HealthInfo healthInfo) {
-		try {
-			WebTarget target = apiTarget.path("health");
-
-			ObjectWriter writer = PluginContext.getInstance().getJsonWriter();
-			String healthInfoLog = writer.writeValueAsString(healthInfo);
-			
-			Invocation.Builder invocationBuilder = target.request().accept(
-					MediaType.APPLICATION_JSON);
-			addHeaders(invocationBuilder);
-			
-			Response response = null;
-			try {
-				response = invocationBuilder.put(Entity.entity(healthInfoLog,
-						MediaType.APPLICATION_JSON));
-			} catch (Exception e) {
-				return new ApiResponse<Void>(ApiResponse.Status.ConnectionProblems);
-			}
-			return new ApiResponse<Void>(response.getStatus(), response
-					.getStatusInfo().getReasonPhrase());
-		} catch (JsonProcessingException e) {
-			return new ApiResponse<Void>(ApiResponse.Status.ClientError,
-					String.format("Problem parsing data from the server. %s",
-							e.getMessage()));
-		}
-	}
-
-	public ApiResponse<Version> version() {
-		WebTarget target = apiTarget.path("version").queryParam("client", "Eclipse");
-		return doGet(target, Version.class);
-	}
-	*/
 	
 	public static ApiResponse<PluginSettingsInfo> getPluginSettings() {
 		ObjectMapper mapper = new ObjectMapper();
@@ -188,27 +135,21 @@ public class ApiClient<Y> {
 	
 	private <T> ApiResponse<T> doPost(String route, Class<T> type, String payload)
 	{
+		HttpResponse<String> response = null;
 		try {
-			HttpResponse<String> response = null;
-			try {
-				response = Unirest.post("https://codealike.com/api/v2/{route}")
-						  .header("accept", "application/json")
-						  .header("Content-Type", "application/json")
-						  .header(X_EAUTH_IDENTITY_HEADER, this.identity)
-						  .header(X_EAUTH_TOKEN_HEADER, this.token)
-						  .header(X_EAUTH_CLIENT_HEADER, "eclipse")
-						  .routeParam("route", route)
-						  .body(payload)
-						  .asString();
-				
-				return new ApiResponse<T>(response.getStatus(), response.getStatusText());
-			} catch (Exception e) {
-				return new ApiResponse<T>(ApiResponse.Status.ConnectionProblems);
-			}
+			response = Unirest.post("https://codealike.com/api/v2/{route}")
+					  .header("accept", "application/json")
+					  .header("Content-Type", "application/json")
+					  .header(X_EAUTH_IDENTITY_HEADER, this.identity)
+					  .header(X_EAUTH_TOKEN_HEADER, this.token)
+					  .header(X_EAUTH_CLIENT_HEADER, "eclipse")
+					  .routeParam("route", route)
+					  .body(payload)
+					  .asString();
+			
+			return new ApiResponse<T>(response.getStatus(), response.getStatusText());
 		} catch (Exception e) {
-			return new ApiResponse<T>(ApiResponse.Status.ClientError,
-					String.format("Problem parsing data from the server. %s",
-							e.getMessage()));
+			return new ApiResponse<T>(ApiResponse.Status.ConnectionProblems);
 		}
 	}
 	
@@ -223,7 +164,6 @@ public class ApiClient<Y> {
 	public ApiResponse<String> registerProjectContext(UUID projectId, String name) {
 		try {
 			SolutionContextInfo solutionContext = new SolutionContextInfo(projectId, name);
-	
 			ObjectWriter writer = PluginContext.getInstance().getJsonWriter();
 			String solutionAsJson = writer.writeValueAsString(solutionContext);
 			
@@ -233,64 +173,19 @@ public class ApiClient<Y> {
 					String.format("Problem parsing data from the server. %s",
 							e.getMessage()));
 		}
-		
-			//WebTarget target = apiTarget.path("solution");
-
-			//ObjectWriter writer = PluginContext.getInstance().getJsonWriter();
-			//String solutionAsJson = writer.writeValueAsString(solutionContext);
-			//Invocation.Builder invocationBuilder = target.request().accept(
-			//		MediaType.APPLICATION_JSON);
-			//addHeaders(invocationBuilder);
-
-			/*Response response = null;
-			try {
-				response = invocationBuilder.post(Entity.entity(solutionAsJson,
-						MediaType.APPLICATION_JSON));
-			} catch (Exception e) {
-				return new ApiResponse<Void>(ApiResponse.Status.ConnectionProblems);
-			}
-			return new ApiResponse<Void>(response.getStatus(), response
-					.getStatusInfo().getReasonPhrase());
-		} catch (JsonProcessingException e) {
-			return new ApiResponse<Void>(ApiResponse.Status.ClientError,
-					String.format("Problem parsing data from the server. %s",
-							e.getMessage()));
-		}*/
 	}
 
 	public ApiResponse<String> postActivityInfo(ActivityInfo info) {
 		try {
 			ObjectWriter writer = PluginContext.getInstance().getJsonWriter();
 			String activityInfoAsJson = writer.writeValueAsString(info);
+			
 			return doPost("activity", String.class, activityInfoAsJson);
 		} catch (JsonProcessingException e) {
 			return new ApiResponse<String>(ApiResponse.Status.ClientError,
 					String.format("Problem parsing data from the server. %s",
 							e.getMessage()));
 		}
-		/*try {
-			WebTarget target = apiTarget.path("activity");
-
-			ObjectWriter writer = PluginContext.getInstance().getJsonWriter();
-			String activityInfoAsJson = writer.writeValueAsString(info);
-			Invocation.Builder invocationBuilder = target.request().accept(
-					MediaType.APPLICATION_JSON);
-			addHeaders(invocationBuilder);
-
-			Response response = null;
-			try {
-				response = invocationBuilder.post(Entity.entity(
-						activityInfoAsJson, MediaType.APPLICATION_JSON));
-			} catch (Exception e) {
-				return new ApiResponse<Void>(ApiResponse.Status.ConnectionProblems);
-			}
-			return new ApiResponse<Void>(response.getStatus(), response
-					.getStatusInfo().getReasonPhrase());
-		} catch (JsonProcessingException e) {
-			return new ApiResponse<Void>(ApiResponse.Status.ClientError,
-					String.format("Problem parsing data from the server. %s",
-							e.getMessage()));
-		}*/
 	}
 
 	public ApiResponse<String> tokenAuthenticate() {

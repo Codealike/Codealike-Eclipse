@@ -88,11 +88,7 @@ public class CodealikeTrackerPlugin extends AbstractUIPlugin {
 		try {
 			pluginContext.initializeContext();
 			super.start(context);
-		    
-		    if (!pluginContext.checkVersion()) {
-		    	throw new Exception();
-		    }
-		    
+
 		    pluginContext.getTrackingService().setBeforeOpenProjectDate();
 		    pluginContext.getIdentityService().addObserver(loginObserver);
 			if (!pluginContext.getIdentityService().tryLoginWithStoredCredentials()) {
