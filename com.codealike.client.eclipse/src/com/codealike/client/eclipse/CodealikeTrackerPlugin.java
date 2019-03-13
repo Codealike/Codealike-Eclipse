@@ -1,12 +1,7 @@
 package com.codealike.client.eclipse;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Properties;
-
-import org.eclipse.e4.core.services.nls.Message;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -16,15 +11,12 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 import com.codealike.client.eclipse.api.ApiClient;
-import com.codealike.client.eclipse.internal.dto.HealthInfo;
-import com.codealike.client.eclipse.internal.dto.HealthInfo.HealthInfoType;
 import com.codealike.client.eclipse.internal.services.IdentityService;
 import com.codealike.client.eclipse.internal.services.TrackingService;
 import com.codealike.client.eclipse.internal.startup.PluginContext;
 import com.codealike.client.eclipse.internal.utils.Configuration;
 import com.codealike.client.eclipse.internal.utils.LogManager;
 import com.codealike.client.eclipse.internal.utils.WorkbenchUtils;
-import com.codealike.client.eclipse.views.AuthenticationBrowserView;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -33,7 +25,6 @@ public class CodealikeTrackerPlugin extends AbstractUIPlugin {
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "com.codealike.client.eclipse"; //$NON-NLS-1$
-	private static final String CODEALIKE_PROPERTIES_FILE = "codealike.properties";
 
 	// The shared instance
 	private static CodealikeTrackerPlugin plugin;
@@ -83,7 +74,7 @@ public class CodealikeTrackerPlugin extends AbstractUIPlugin {
 	 */
 	public void start(BundleContext context) throws Exception {
 		plugin = this;
-		this.pluginContext = PluginContext.getInstance(loadPluginProperties());
+		this.pluginContext = PluginContext.getInstance();
 		
 		try {
 			pluginContext.initializeContext();
@@ -110,15 +101,6 @@ public class CodealikeTrackerPlugin extends AbstractUIPlugin {
 			//client.logHealth(new HealthInfo(e, "Plugin could not start.", "eclipse", HealthInfoType.Error, pluginContext.getIdentityService().getIdentity()));
 			LogManager.INSTANCE.logError(e, "Couldn't start plugin.");
 		}
-	}
-	
-	protected Properties loadPluginProperties() throws IOException {
-		Properties properties = new Properties();
-		InputStream in = CodealikeTrackerPlugin.class.getResourceAsStream(CODEALIKE_PROPERTIES_FILE);
-		properties.load(in);
-		in.close();
-		
-		return properties;
 	}
 	
 	protected void startTracker() {

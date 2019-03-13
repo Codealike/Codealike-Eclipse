@@ -42,7 +42,6 @@ public class PluginContext {
 	
 	private String ideName;
 	private Version protocolVersion;
-	private Properties properties;
 	private ObjectWriter jsonWriter;
 	private ObjectMapper jsonMapper;
 	private ContextCreator contextCreator;
@@ -60,18 +59,14 @@ public class PluginContext {
 	public static final UUID UNASSIGNED_PROJECT = UUID.fromString("00000000-0000-0000-0000-0000000001");
 	
 	public static PluginContext getInstance() {
-		return PluginContext.getInstance(null);
-	}
-	
-	public static PluginContext getInstance(Properties properties) {
 			if (_instance == null)
 			{
-				_instance = new PluginContext(properties);
+				_instance = new PluginContext();
 			}
 		return _instance;
 	}
 	
-	public PluginContext(Properties properties) {
+	public PluginContext() {
 		DateTimeZone.setDefault(DateTimeZone.UTC);
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -89,7 +84,6 @@ public class PluginContext {
 		this.identityService = IdentityService.getInstance();
 		this.instanceValue = String.valueOf(new Random(DateTime.now().getMillis()).nextInt(Integer.MAX_VALUE) + 1);
 		this.protocolVersion = new Version(0, 9);
-		this.properties = properties;
 		this.ideName = "eclipse";
 		this.machineName = findLocalHostNameOr("unknown");
 
@@ -253,10 +247,6 @@ public class PluginContext {
 			LogManager.INSTANCE.logInfo("Communication problems running in offline mode.");
 		}
 		return false;
-	}
-	
-	public String getProperty(String key) {
-		return this.properties.getProperty(key);
 	}
 	
 	public ObjectWriter getJsonWriter() {
