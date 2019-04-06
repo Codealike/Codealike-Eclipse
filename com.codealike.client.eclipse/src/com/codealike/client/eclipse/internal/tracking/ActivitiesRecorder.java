@@ -261,10 +261,6 @@ public class ActivitiesRecorder {
 			} catch (IOException e) {
 				LogManager.INSTANCE.logError(e, "There was a problem trying to send offline activity data to the server.");
 				result = FlushResult.Report;
-			} 
-			catch (KeyManagementException e) {
-				LogManager.INSTANCE.logError(e, "Could not send data to remote server. There was a problem with SSL configuration.");
-				result = FlushResult.Skip;
 			}
 			
 			finally {
@@ -296,14 +292,7 @@ public class ActivitiesRecorder {
 
 	private FlushResult trySendEntries(ActivityInfo info, String username, String token) {
 		try {
-			ApiClient client;
-			try {
-				client = ApiClient.tryCreateNew(username, token);
-			}
-			catch (KeyManagementException e) {
-				LogManager.INSTANCE.logError(e, "Could send activity to remote server. There was a problem with SSL configuration.");
-				return FlushResult.Offline;
-			}
+			ApiClient client = ApiClient.tryCreateNew(username, token);
 			
 			ApiResponse<Void> response = client.postActivityInfo(info);
 			if (!response.success()) {

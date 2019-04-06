@@ -117,10 +117,14 @@ public class TrackingService extends Observable {
 	
 	public void stopTracking(boolean propagate) {
 		this.tracker.stopTracking();
+		
 		if (this.flushExecutor != null) {
 			this.flushExecutor.shutdownNow();
 			this.flushExecutor = null;
 		}
+		
+		// try send last information batch
+		this.flushTrackingInformation();
 		
 		this.trackedProjectManager.stopTracking();
 		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this.changesListener);

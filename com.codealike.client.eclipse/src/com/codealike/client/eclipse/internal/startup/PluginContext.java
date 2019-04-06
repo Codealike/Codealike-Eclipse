@@ -3,9 +3,7 @@ package com.codealike.client.eclipse.internal.startup;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.URL;
 import java.net.UnknownHostException;
-import java.security.KeyManagementException;
 import java.util.Properties;
 import java.util.Random;
 import java.util.UUID;
@@ -14,16 +12,11 @@ import org.eclipse.core.internal.resources.ProjectPreferences;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.ui.PlatformUI;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
-import org.osgi.service.prefs.BackingStoreException;
-
-import com.codealike.client.eclipse.CodealikeTrackerPlugin;
 import com.codealike.client.eclipse.api.ApiClient;
 import com.codealike.client.eclipse.api.ApiResponse;
 import com.codealike.client.eclipse.internal.dto.PluginSettingsInfo;
@@ -36,7 +29,6 @@ import com.codealike.client.eclipse.internal.services.TrackingService;
 import com.codealike.client.eclipse.internal.tracking.code.ContextCreator;
 import com.codealike.client.eclipse.internal.utils.Configuration;
 import com.codealike.client.eclipse.internal.utils.LogManager;
-import com.codealike.client.eclipse.views.ErrorDialogView;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -44,13 +36,12 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 @SuppressWarnings("restriction")
 public class PluginContext {
 
-	public static final String VERSION = "0.4.3";
+	public static final String VERSION = "0.4.5";
 	private static final String PLUGIN_PREFERENCES_QUALIFIER = "com.codealike.client.eclipse";
 	private static PluginContext _instance;
 	
 	private String ideName;
 	private Version protocolVersion;
-	private Properties properties;
 	private ObjectWriter jsonWriter;
 	private ObjectMapper jsonMapper;
 	private ContextCreator contextCreator;
@@ -68,18 +59,14 @@ public class PluginContext {
 	public static final UUID UNASSIGNED_PROJECT = UUID.fromString("00000000-0000-0000-0000-0000000001");
 	
 	public static PluginContext getInstance() {
-		return PluginContext.getInstance(null);
-	}
-	
-	public static PluginContext getInstance(Properties properties) {
 			if (_instance == null)
 			{
-				_instance = new PluginContext(properties);
+				_instance = new PluginContext();
 			}
 		return _instance;
 	}
 	
-	public PluginContext(Properties properties) {
+	public PluginContext() {
 		DateTimeZone.setDefault(DateTimeZone.UTC);
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -97,7 +84,6 @@ public class PluginContext {
 		this.identityService = IdentityService.getInstance();
 		this.instanceValue = String.valueOf(new Random(DateTime.now().getMillis()).nextInt(Integer.MAX_VALUE) + 1);
 		this.protocolVersion = new Version(0, 9);
-		this.properties = properties;
 		this.ideName = "eclipse";
 		this.machineName = findLocalHostNameOr("unknown");
 
@@ -226,14 +212,7 @@ public class PluginContext {
 	
 	private UUID tryCreateUniqueId() {
 		UUID solutionId = UUID.randomUUID();
-		ApiClient client;
-		try {
-			client = ApiClient.tryCreateNew(this.identityService.getIdentity(), this.identityService.getToken());
-		}
-		catch (KeyManagementException e) {
-			LogManager.INSTANCE.logError(e, "Could not create unique Id synchronized with the server. There was a problem with SSL configuration.");
-			return solutionId;
-		}
+		ApiClient client = ApiClient.tryCreateNew(this.identityService.getIdentity(), this.identityService.getToken());
 		ApiResponse<SolutionContextInfo> response = client.getSolutionContext(solutionId);
 		if (response.connectionTimeout()) {
 			LogManager.INSTANCE.logInfo("Communication problems running in offline mode.");
@@ -249,14 +228,8 @@ public class PluginContext {
 	}
 	
 	public boolean registerProjectContext(UUID solutionId, String projectName) throws Exception {
-		ApiClient client;
-		try {
-			client = ApiClient.tryCreateNew(this.identityService.getIdentity(), this.identityService.getToken());
-		}
-		catch (KeyManagementException e) {
-			LogManager.INSTANCE.logError(e, "Could not register unique project context in the remote server. There was a problem with SSL configuration.");
-			return false;
-		}
+		ApiClient client = ApiClient.tryCreateNew(this.identityService.getIdentity(), this.identityService.getToken());
+
 		ApiResponse<SolutionContextInfo> solutionInfoResponse = client.getSolutionContext(solutionId);
 		if (solutionInfoResponse.notFound()) {
 			ApiResponse<Void> response = client.registerProjectContext(solutionId, projectName);
@@ -274,69 +247,6 @@ public class PluginContext {
 			LogManager.INSTANCE.logInfo("Communication problems running in offline mode.");
 		}
 		return false;
-	}
-	
-	public boolean checkVersion() {
-		ApiClient client;
-		try {
-			client = ApiClient.tryCreateNew();
-		}
-		catch (KeyManagementException e)
-		{
-			LogManager.INSTANCE.logError(e, "Could not access remote server. There was a problem with SSL configuration.");
-			return false;
-		}
-		
-		ApiResponse<Version> response = client.version();
-		if (response.success()) {
-			Version version = response.getObject();
-			Version expectedVersion = getProtocolVersion();
-			if (expectedVersion.getMajor() < version.getMajor()) {
-				showIcompatibleVersionDialog();
-				return false;
-			}
-			if (expectedVersion.getMinor() < version.getMinor()) {
-				showIcompatibleVersionDialog();
-				return false;
-			}
-			
-			return true;
-		}
-		else if (!response.connectionTimeout()) {
-			LogManager.INSTANCE.logError(String.format("Couldn't check plugin version (Status code=%s)", response.getStatus()));
-			
-			String title = "Houston... I have the feeling we messed up the specs.";
-			String text = "If the problem continues, radio us for assistance.";
-			if (PlatformUI.getWorkbench()!=null) {
-				ErrorDialogView dialog = new ErrorDialogView(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), title, text, "Roger that.", "images/LunarCat.png");
-				dialog.open();
-			}
-			
-			return false;
-		}
-		return true;
-	}
-	
-	private void showIcompatibleVersionDialog() {
-		String title = "This version is not updated";
-		String text = "Click below to be on the bleeding edge and enjoy an improved version of Codealike.";
-		ErrorDialogView dialog = new ErrorDialogView(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), title, text, "Download the latest.", "images/bigCodealike.jpg",
-			new Runnable() {
-				
-				@Override
-				public void run() {
-					try {
-						PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(PluginContext.getInstance().getProperty("codealike.server.url")+"/Public/Home/Download"));
-					} catch (Exception e) {
-						LogManager.INSTANCE.logError(e, "Couldn't open browser to download new version of plugin.");
-					}
-				}
-		});
-		dialog.open();
-	}
-	
-	public String getProperty(String key) {
-		return this.properties.getProperty(key);
 	}
 	
 	public ObjectWriter getJsonWriter() {
