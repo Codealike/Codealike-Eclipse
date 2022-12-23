@@ -4,7 +4,6 @@ import java.util.Observable;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.resources.IProject;
@@ -12,8 +11,6 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.ui.PlatformUI;
 import org.joda.time.DateTime;
-import org.joda.time.Duration;
-
 import com.codealike.client.eclipse.internal.model.TrackedProjectManager;
 import com.codealike.client.eclipse.internal.startup.PluginContext;
 import com.codealike.client.eclipse.internal.tracking.StateTracker;

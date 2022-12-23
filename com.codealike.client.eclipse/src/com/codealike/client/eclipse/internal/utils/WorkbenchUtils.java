@@ -1,7 +1,5 @@
 package com.codealike.client.eclipse.internal.utils;
 
-import java.util.Observable;
-
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;

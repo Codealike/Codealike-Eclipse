@@ -38,7 +38,7 @@ public class ContextCreator {
 	
 	public CodeContext createCodeContext(IEditorPart editor, UUID projectId) throws JavaModelException {
 		if (editor instanceof JavaEditor) {
-			return createCodeContextInternal((JavaEditor)editor, projectId);
+			return createCodeContextInternal((JavaEditor) editor, projectId);
 		}
 		else {
 			return createCodeContextInternal(editor, projectId);

@@ -17,7 +17,6 @@ import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Optional;
-import java.util.UUID;
 
 public class Configuration {
     private ObjectMapper mapper = new ObjectMapper();
@@ -29,9 +28,9 @@ public class Configuration {
     private File cachePath;
     private File instancePath;
 
-    private String clientId;
-    private String clientVersion;
-    private String instanceId;
+    protected String clientId;
+    protected String clientVersion;
+    protected String instanceId;
 
     public Configuration(String clientId, String clientVersion, String instanceId) {
         // sets the codealike base path for logging and user settings and profile

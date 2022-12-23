@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Properties;
 import java.util.Random;
 import java.util.UUID;
 
@@ -232,7 +231,7 @@ public class PluginContext {
 
 		ApiResponse<SolutionContextInfo> solutionInfoResponse = client.getSolutionContext(solutionId);
 		if (solutionInfoResponse.notFound()) {
-			ApiResponse<Void> response = client.registerProjectContext(solutionId, projectName);
+			ApiResponse<String> response = client.registerProjectContext(solutionId, projectName);
 			if (!response.success()) {
 				LogManager.INSTANCE.logError("Problem registering solution.");
 			}
