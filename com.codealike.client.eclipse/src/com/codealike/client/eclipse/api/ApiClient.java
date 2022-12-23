@@ -1,19 +1,13 @@
 package com.codealike.client.eclipse.api;
 
 import java.io.IOException;
-import java.net.ConnectException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.util.UUID;
 
 import com.codealike.client.eclipse.internal.dto.ActivityInfo;
-import com.codealike.client.eclipse.internal.dto.HealthInfo;
 import com.codealike.client.eclipse.internal.dto.PluginSettingsInfo;
 import com.codealike.client.eclipse.internal.dto.ProfileInfo;
 import com.codealike.client.eclipse.internal.dto.SolutionContextInfo;
 import com.codealike.client.eclipse.internal.dto.UserConfigurationInfo;
-import com.codealike.client.eclipse.internal.dto.Version;
 import com.codealike.client.eclipse.internal.startup.PluginContext;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,9 +15,8 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.request.HttpRequest;
 
-public class ApiClient<Y> {
+public class ApiClient {
 
 	private static final String X_EAUTH_CLIENT_HEADER = "X-Eauth-Client";
 	private static final String X_EAUTH_TOKEN_HEADER = "X-Api-Token";
@@ -90,6 +83,7 @@ public class ApiClient<Y> {
 		return doGet(String.format("solution/%s", projectId.toString()), SolutionContextInfo.class);
 	}
 	
+	@SuppressWarnings("unchecked")
 	private <T> ApiResponse<T> doGet(String route, Class<T> type) {
 		try {
 			HttpResponse<String> response = null;

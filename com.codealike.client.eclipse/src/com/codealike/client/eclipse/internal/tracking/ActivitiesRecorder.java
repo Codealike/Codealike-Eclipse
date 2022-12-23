@@ -4,10 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
-import java.security.KeyManagementException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -31,7 +29,6 @@ import com.codealike.client.eclipse.internal.model.NullActivityState;
 import com.codealike.client.eclipse.internal.model.StructuralCodeContext;
 import com.codealike.client.eclipse.internal.processing.ActivityInfoProcessor;
 import com.codealike.client.eclipse.internal.startup.PluginContext;
-import com.codealike.client.eclipse.internal.utils.GenericExtensionFilter;
 import com.codealike.client.eclipse.internal.utils.LogManager;
 import com.codealike.client.eclipse.internal.utils.TrackingConsole;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -250,7 +247,7 @@ public class ActivitiesRecorder {
 				ActivityInfo activityInfo = context.getJsonMapper().readValue(new FileInputStream(fileEntry), ActivityInfo.class);
 				ApiClient client = ApiClient.tryCreateNew(username, token);
 				
-				ApiResponse<Void> response = client.postActivityInfo(activityInfo);
+				ApiResponse<String> response = client.postActivityInfo(activityInfo);
 				if (response.success()) {
 					result = FlushResult.Succeded;
 				}
@@ -294,7 +291,7 @@ public class ActivitiesRecorder {
 		try {
 			ApiClient client = ApiClient.tryCreateNew(username, token);
 			
-			ApiResponse<Void> response = client.postActivityInfo(info);
+			ApiResponse<String> response = client.postActivityInfo(info);
 			if (!response.success()) {
 				LogManager.INSTANCE.logWarn(String.format("There was a problem trying to send activity data to the server (Status: %s). "
 						+ "Data will be stored offline until it can be sent.", response.getStatus().toString()));

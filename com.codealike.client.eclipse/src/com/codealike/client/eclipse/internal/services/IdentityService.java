@@ -1,6 +1,5 @@
 package com.codealike.client.eclipse.internal.services;
 
-import java.security.KeyManagementException;
 import java.util.Observable;
 
 import org.eclipse.equinox.security.storage.ISecurePreferences;
@@ -15,7 +14,6 @@ import com.codealike.client.eclipse.internal.model.Profile;
 import com.codealike.client.eclipse.internal.model.TrackActivity;
 import com.codealike.client.eclipse.internal.startup.PluginContext;
 import com.codealike.client.eclipse.internal.utils.Configuration;
-import com.codealike.client.eclipse.internal.utils.LogManager;
 import com.codealike.client.eclipse.internal.utils.WorkbenchUtils;
 
 public class IdentityService extends Observable {
