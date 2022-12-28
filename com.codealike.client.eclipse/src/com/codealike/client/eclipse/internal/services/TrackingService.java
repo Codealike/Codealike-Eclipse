@@ -1,6 +1,5 @@
 package com.codealike.client.eclipse.internal.services;
 
-import java.util.Observable;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -21,7 +20,7 @@ import com.codealike.client.eclipse.internal.utils.TrackingConsole;
 import com.codealike.client.eclipse.internal.utils.WorkbenchUtils;
 import com.google.common.collect.BiMap;
 
-public class TrackingService extends Observable {
+public class TrackingService extends BaseService {
 	private static TrackingService _instance;
 	
 	private TrackedProjectManager trackedProjectManager;
@@ -68,8 +67,7 @@ public class TrackingService extends Observable {
 																	| IResourceChangeEvent.PRE_DELETE | IResourceChangeEvent.PRE_CLOSE);
 		
 		this.isTracking = true;
-		setChanged();
-		notifyObservers();
+		publishEvent();
 	}
 	
 	private void startFlushExecutor() {
@@ -128,8 +126,7 @@ public class TrackingService extends Observable {
 		
 		this.isTracking = false;
 		if (propagate) {
-			setChanged();
-			notifyObservers();
+			publishEvent();
 		}
 	}
 	

@@ -31,7 +31,8 @@ public class DateTimeDeserializer extends JsonDeserializer<DateTime> {
 				return formatter.parseDateTime(date);
 		}
 		
-		throw context.mappingException("Expected string value to parse a DateTime");
+		
+		throw context.instantiationException(DateTimeFormatter.class, "Expected string value to parse a DateTime");
 	}
 
 }

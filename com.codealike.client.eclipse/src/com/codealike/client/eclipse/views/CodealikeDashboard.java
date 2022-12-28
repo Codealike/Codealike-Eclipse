@@ -1,7 +1,5 @@
 package com.codealike.client.eclipse.views;
 
-import java.util.Observable;
-import java.util.Observer;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -41,6 +39,7 @@ import org.eclipse.swt.SWTException;
 
 import com.codealike.client.eclipse.internal.model.TrackedProjectManager;
 import com.codealike.client.eclipse.internal.services.IdentityService;
+import com.codealike.client.eclipse.internal.services.ServiceListener;
 import com.codealike.client.eclipse.internal.services.TrackingService;
 import com.codealike.client.eclipse.internal.startup.PluginContext;
 import com.codealike.client.eclipse.internal.utils.Configuration;
@@ -69,39 +68,35 @@ public class CodealikeDashboard extends ViewPart {
 	private Clipboard cb;
 	private Composite parentComponent;
 	
-	private Observer authObserver = new Observer() {
+	private ServiceListener authObserver = new ServiceListener() {
 		
 		@Override
-		public void update(Observable o, Object arg) {
-			if (o == context.getIdentityService()) {
-				setSignedAsLabelText();
-				if (context.getIdentityService().isAuthenticated()) {
-					showTrackedProjects();
-					signedAsLabel.getParent().layout();
-					signOut.setVisible(true);
-				}
-				
-				// refresh view
-				parentComponent.pack();
-				parentComponent.layout(true);
+		public void onEvent() {
+			setSignedAsLabelText();
+			if (context.getIdentityService().isAuthenticated()) {
+				showTrackedProjects();
+				signedAsLabel.getParent().layout();
+				signOut.setVisible(true);
 			}
+			
+			// refresh view
+			parentComponent.pack();
+			parentComponent.layout(true);
 		}
 	};
 	
-	private Observer trackingObserver = new Observer() {
+	private ServiceListener trackingObserver = new ServiceListener() {
 		
 		@Override
-		public void update(Observable o, Object arg) {
-			if (o == trackingService) {
-				if (onOffButton != null && !onOffButton.isDisposed()) {
-					enableDisableTracking(onOffButton.getParent());
-				}
-				
-				if (!parentComponent.isDisposed()) {
-					// refresh view
-					parentComponent.pack();
-					parentComponent.layout(true);
-				}
+		public void onEvent() {
+			if (onOffButton != null && !onOffButton.isDisposed()) {
+				enableDisableTracking(onOffButton.getParent());
+			}
+			
+			if (!parentComponent.isDisposed()) {
+				// refresh view
+				parentComponent.pack();
+				parentComponent.layout(true);
 			}
 		}
 	};	
@@ -112,9 +107,9 @@ public class CodealikeDashboard extends ViewPart {
 	 */
 	public CodealikeDashboard() {
 		this.context = PluginContext.getInstance();
-		this.context.getIdentityService().addObserver(authObserver);
+		this.context.getIdentityService().addListener(authObserver);
 		this.trackingService = this.context.getTrackingService();
-		this.trackingService.addObserver(trackingObserver);
+		this.trackingService.addListener(trackingObserver);
 		
 		this.cb = new Clipboard(Display.getCurrent());
 	}
@@ -294,7 +289,7 @@ public class CodealikeDashboard extends ViewPart {
 		viewer.setContentProvider(new ObservableListContentProvider());
 
 		// wrap the input into a writable list
-		IObservableList input = BeanProperties.list(TrackedProjectManager.class, "trackedProjectsLabels").observe(trackingService.getTrackedProjectManager());
+		IObservableList<Object> input = BeanProperties.list(TrackedProjectManager.class, "trackedProjectsLabels").observe(trackingService.getTrackedProjectManager());
 		// set the IObservableList as input for the viewer
 		viewer.setInput(input);
 		// Create the help context id for the viewer's control

@@ -1,7 +1,5 @@
 package com.codealike.client.eclipse.internal.services;
 
-import java.util.Observable;
-
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.equinox.security.storage.StorageException;
@@ -16,7 +14,7 @@ import com.codealike.client.eclipse.internal.startup.PluginContext;
 import com.codealike.client.eclipse.internal.utils.Configuration;
 import com.codealike.client.eclipse.internal.utils.WorkbenchUtils;
 
-public class IdentityService extends Observable {
+public class IdentityService extends BaseService {
 	
 	private static IdentityService _instance;
 	private boolean isAuthenticated;
@@ -49,8 +47,7 @@ public class IdentityService extends Observable {
 		if (this.isAuthenticated) {
 			WorkbenchUtils.addMessageToStatusBar("Codealike is connected.");
 			
-			setChanged();
-			notifyObservers();
+			publishEvent();
 			return true;
 		}
 
@@ -88,8 +85,7 @@ public class IdentityService extends Observable {
 				this.trackActivities = config.getTrackActivities();
 			}
 			this.isAuthenticated = true;
-			setChanged();
-			notifyObservers();
+			publishEvent();
 			return true;
 		}
 		
@@ -199,8 +195,7 @@ public class IdentityService extends Observable {
 		this.token = null;
 		removeStoredCredentials();
 		
-		setChanged();
-		notifyObservers();
+		publishEvent();
 	}
 
 }
