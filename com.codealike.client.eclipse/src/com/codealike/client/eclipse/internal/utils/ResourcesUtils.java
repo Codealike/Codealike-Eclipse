@@ -15,7 +15,7 @@ public class ResourcesUtils {
 	                .getBundle().getSymbolicName() + "/" + imagePath);
 		    
 		  final ImageDescriptor imgDesc = ImageDescriptor.createFromURL(url);
-		  return imgDesc.getImageData();
+		  return imgDesc.getImageData(100);
 	}
 
 }

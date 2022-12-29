@@ -1,7 +1,5 @@
 package com.codealike.client.eclipse;
 
-import java.util.Observable;
-import java.util.Observer;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -12,6 +10,7 @@ import org.osgi.framework.BundleContext;
 
 import com.codealike.client.eclipse.api.ApiClient;
 import com.codealike.client.eclipse.internal.services.IdentityService;
+import com.codealike.client.eclipse.internal.services.ServiceListener;
 import com.codealike.client.eclipse.internal.services.TrackingService;
 import com.codealike.client.eclipse.internal.startup.PluginContext;
 import com.codealike.client.eclipse.internal.utils.Configuration;
@@ -29,33 +28,29 @@ public class CodealikeTrackerPlugin extends AbstractUIPlugin {
 	// The shared instance
 	private static CodealikeTrackerPlugin plugin;
 	private PluginContext pluginContext;
-	private Observer loginObserver = new Observer() {
+	private ServiceListener loginObserver = new ServiceListener() {
 		
 		@Override
-		public void update(Observable o, Object arg1) {
-			
-			if (o == pluginContext.getIdentityService()) {
-				TrackingService trackingService = pluginContext.getTrackingService();
-				IdentityService identityService = pluginContext.getIdentityService();
-				if (identityService.isAuthenticated()) {
-					switch(identityService.getTrackActivity()) {
-						case Always:
-						{
-							trackingService.enableTracking();
-							break;
-						}
-						case AskEveryTime:
-							WorkbenchUtils.addMessageToStatusBar("Codealike is not tracking your projects");
-							break;
-						case Never:
-							WorkbenchUtils.addMessageToStatusBar("Codealike is not tracking your projects");
-							break;
-							
+		public void onEvent() {
+			TrackingService trackingService = pluginContext.getTrackingService();
+			IdentityService identityService = pluginContext.getIdentityService();
+			if (identityService.isAuthenticated()) {
+				switch(identityService.getTrackActivity()) {
+					case Always:
+					{
+						trackingService.enableTracking();
+						break;
 					}
+					case AskEveryTime:
+						WorkbenchUtils.addMessageToStatusBar("Codealike is not tracking your projects");
+						break;
+					case Never:
+						WorkbenchUtils.addMessageToStatusBar("Codealike is not tracking your projects");
+						break;
+						
 				}
-				else {
-					trackingService.disableTracking();
-				}
+			} else {
+				trackingService.disableTracking();
 			}
 		}
 	};
@@ -81,7 +76,7 @@ public class CodealikeTrackerPlugin extends AbstractUIPlugin {
 			super.start(context);
 
 		    pluginContext.getTrackingService().setBeforeOpenProjectDate();
-		    pluginContext.getIdentityService().addObserver(loginObserver);
+		    pluginContext.getIdentityService().addListener(loginObserver);
 			if (!pluginContext.getIdentityService().tryLoginWithStoredCredentials()) {
 				PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
 					
