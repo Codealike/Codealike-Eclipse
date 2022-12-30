@@ -32,6 +32,14 @@ Enter any name and click "Apply"
 
 Click "Run" to test the plugin
 
+## Generating plugin package
+
+Go to File -> Export
+
+Select "Plug-in Development" -> "Deployable plug-ins and fragments"
+
+Select an output folder and click Finish. If necessary do a Jar signing.
+
 ## Plugin usage
 
 In the first Eclipse is executed, the Codealike token will be asked. The token can be retrieved in https://codealike.com
