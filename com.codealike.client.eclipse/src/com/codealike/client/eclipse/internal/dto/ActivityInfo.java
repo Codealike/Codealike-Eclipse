@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2022. All rights reserved to Torc LLC.
+ */
 package com.codealike.client.eclipse.internal.dto;
 
 import java.util.List;
@@ -5,6 +8,12 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+/**
+ * Activity information DTO class.
+ *
+ * @author Daniel, pvmagacho
+ * @version 1.5.0.2
+ */
 public class ActivityInfo {
 
 	private String machine;
@@ -17,9 +26,19 @@ public class ActivityInfo {
 	private UUID solutionId;
 	private UUID batchId;
 
+	/**
+	 * Default constructor.
+	 */
 	public ActivityInfo() {
 	}
-	
+
+	/**
+	 * Activity info constructor.
+	 *
+	 * @param instance   the instance name
+	 * @param solutionId the UUID for the solution
+	 * @param batchId    the UUID for the batch
+	 */
 	public ActivityInfo(String instance, UUID solutionId, UUID batchId) {
 		this.instance = instance;
 		this.solutionId = solutionId;
@@ -41,19 +60,19 @@ public class ActivityInfo {
 	public void setProjects(List<ProjectContextInfo> projectsInfo) {
 		this.projects = projectsInfo;
 	}
-	
+
 	public void setStates(List<ActivityEntryInfo> statesInfo) {
 		this.states = statesInfo;
 	}
-	
+
 	public void setEvents(List<ActivityEntryInfo> eventsInfo) {
 		this.events = eventsInfo;
 	}
-	
+
 	public String getInstance() {
 		return instance;
 	}
-	
+
 	public String getMachine() {
 		return machine;
 	}
@@ -81,15 +100,15 @@ public class ActivityInfo {
 	public String getClient() {
 		return client;
 	}
-	
+
 	public String getExtension() {
 		return extension;
 	}
 
-	
+	// Check if activity is valid
 	@JsonIgnore
 	public boolean isValid() {
-		//This does not make sense in Eclipse since each solution has only 1 project :)
+		// This does not make sense in Eclipse since each solution has only 1 project :)
 //		if (this.projects == null || this.projects.isEmpty()) {
 //			return false;
 //		}

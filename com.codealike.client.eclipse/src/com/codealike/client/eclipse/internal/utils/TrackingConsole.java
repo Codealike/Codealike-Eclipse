@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2022. All rights reserved to Torc LLC.
+ */
 package com.codealike.client.eclipse.internal.utils;
 
 import java.util.UUID;
@@ -8,8 +11,14 @@ import com.codealike.client.eclipse.internal.model.ActivityState;
 import com.codealike.client.eclipse.internal.serialization.PeriodSerializer;
 import com.codealike.client.eclipse.internal.startup.PluginContext;
 
+/**
+ * Tracking console class. Used to print track events messages to console.
+ *
+ * @author Daniel, pvmagacho
+ * @version 1.5.0.2
+ */
 public class TrackingConsole {
-	
+
 	private static TrackingConsole _instance;
 	private PluginContext context;
 	private boolean enabled;
@@ -18,16 +27,17 @@ public class TrackingConsole {
 		if (_instance == null) {
 			_instance = new TrackingConsole(PluginContext.getInstance());
 		}
-		
+
 		return _instance;
 	}
-	
+
 	private TrackingConsole(PluginContext context) {
 		this.context = context;
-		this.enabled = false; //TODO: add plugin configuration entry for this configuration
-		//this.enabled = Boolean.parseBoolean(context.getProperty("tracking-console.enabled"));
+		this.enabled = false; // TODO: add plugin configuration entry for this configuration
+		// this.enabled =
+		// Boolean.parseBoolean(context.getProperty("tracking-console.enabled"));
 	}
-	
+
 	public void trackMessage(String message) {
 		if (enabled) {
 			System.out.println("---------------------------------------------------------------------");
@@ -35,7 +45,7 @@ public class TrackingConsole {
 			System.out.println("---------------------------------------------------------------------");
 		}
 	}
-	
+
 	public void trackEvent(ActivityEvent event) {
 		if (enabled) {
 			System.out.println("---------------------------------------------------------------------");
@@ -45,24 +55,25 @@ public class TrackingConsole {
 			System.out.println("---------------------------------------------------------------------");
 		}
 	}
-	
+
 	public void trackState(ActivityState state) {
 		if (enabled) {
 			PeriodFormatter formatter = PeriodSerializer.FORMATER;
-			System.out.println(String.format("Last recorded state: type:%s, duration:%s\n", state.getType().toString(), state.getDuration().toString(formatter)));
+			System.out.println(String.format("Last recorded state: type:%s, duration:%s\n", state.getType().toString(),
+					state.getDuration().toString(formatter)));
 		}
 	}
-	
+
 	public void trackProjectEnd(String name, UUID id) {
 		if (enabled) {
 			System.out.println(String.format("Stopped tracking project \"%s\" with id %s", name, id));
 		}
 	}
-	
+
 	public void trackProjectStart(String name, UUID id) {
 		if (enabled) {
 			System.out.println(String.format("Started tracking project \"%s\" with id %s", name, id));
 		}
 	}
-	
+
 }

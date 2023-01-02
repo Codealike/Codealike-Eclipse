@@ -1,24 +1,35 @@
+/*
+ * Copyright (c) 2022. All rights reserved to Torc LLC.
+ */
 package com.codealike.client.eclipse.internal.dto;
 
 import com.codealike.client.eclipse.internal.utils.ExceptionUtils;
 
+/**
+ * Health information DTO class.
+ *
+ * @author Daniel, pvmagacho
+ * @version 1.5.0.2
+ */
 public class HealthInfo {
-	
+
 	private String identity;
 	private String source;
 	private String message;
 	private HealthInfoType type;
-	
+
+	/**
+	 * Health information class constructor.
+	 *
+	 * @param ex       the exception generated
+	 * @param message  the message
+	 * @param source   the source
+	 * @param type     the type
+	 * @param identity the user identity
+	 */
 	public HealthInfo(Exception ex, String message, String source, HealthInfoType type, String identity) {
 		this.identity = identity;
-		this.message = message+" Details: "+ExceptionUtils.toString(ex);
-		this.type = type;
-		this.source = source;
-	}
-	
-	public HealthInfo(String message, String source, HealthInfoType type, String identity) {
-		this.identity = identity;
-		this.message = message;
+		this.message = message + " Details: " + ExceptionUtils.toString(ex);
 		this.type = type;
 		this.source = source;
 	}
@@ -40,8 +51,6 @@ public class HealthInfo {
 	}
 
 	public enum HealthInfoType {
-		Info,
-		Warn,
-		Error
+		Info, Warn, Error
 	}
 }
