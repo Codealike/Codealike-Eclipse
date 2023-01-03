@@ -1,5 +1,7 @@
+/*
+ * Copyright (c) 2022. All rights reserved to Torc LLC.
+ */
 package com.codealike.client.eclipse.views;
-
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -44,7 +46,12 @@ import com.codealike.client.eclipse.internal.services.TrackingService;
 import com.codealike.client.eclipse.internal.startup.PluginContext;
 import com.codealike.client.eclipse.internal.utils.Configuration;
 
-
+/**
+ * Codealike dashboard view.
+ * 
+ * @author Daniel
+ * @version 1.5.0.2
+ */
 public class CodealikeDashboard extends ViewPart {
 
 	/**

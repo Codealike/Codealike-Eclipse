@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2022. All rights reserved to Torc LLC.
+ */
 package com.codealike.client.eclipse.internal.tracking;
 
 import java.util.HashSet;
@@ -60,6 +63,12 @@ import com.codealike.client.eclipse.internal.utils.LogManager;
 import com.codealike.client.eclipse.internal.utils.TrackingConsole;
 import com.codealike.client.eclipse.internal.utils.WorkbenchUtils;
 
+/**
+ * Class to track state.
+ *
+ * @author Daniel, pvmagacho
+ * @version 1.5.0.2
+ */
 public class StateTracker {
 
 	private ActivitiesRecorder recorder;
@@ -480,7 +489,7 @@ public class StateTracker {
 	private void startIdleDetection() {
 		if (this.idleDetectionExecutor != null)
 			return;
-		
+
 		display.syncExec(new Runnable() {
 
 			@Override
@@ -506,9 +515,10 @@ public class StateTracker {
 		};
 
 		int idleDetectionPeriod = PluginContext.getInstance().getConfiguration().getIdleCheckInterval();
-		this.idleDetectionExecutor.scheduleAtFixedRate(idlePeriodicTask, idleDetectionPeriod, idleDetectionPeriod, TimeUnit.MILLISECONDS);
+		this.idleDetectionExecutor.scheduleAtFixedRate(idlePeriodicTask, idleDetectionPeriod, idleDetectionPeriod,
+				TimeUnit.MILLISECONDS);
 	}
-	
+
 	private void stopIdleDetection() {
 		if (this.idleDetectionExecutor != null) {
 			this.idleDetectionExecutor.shutdownNow();
@@ -531,7 +541,7 @@ public class StateTracker {
 			}
 		}
 	}
-	
+
 	protected Listener userActivityListener = new Listener() {
 
 		// This listens to activity only inside the ide (probably is useful for activity

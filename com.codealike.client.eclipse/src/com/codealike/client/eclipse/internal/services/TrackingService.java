@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2022. All rights reserved to Torc LLC.
+ */
 package com.codealike.client.eclipse.internal.services;
 
 import java.util.UUID;
@@ -20,6 +23,12 @@ import com.codealike.client.eclipse.internal.utils.TrackingConsole;
 import com.codealike.client.eclipse.internal.utils.WorkbenchUtils;
 import com.google.common.collect.BiMap;
 
+/**
+ * Tracking service class.
+ *
+ * @author Daniel, pvmagacho
+ * @version 1.5.0.2
+ */
 public class TrackingService extends BaseService {
 	private static TrackingService _instance;
 	

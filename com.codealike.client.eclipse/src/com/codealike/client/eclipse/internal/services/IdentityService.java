@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2022. All rights reserved to Torc LLC.
+ */
 package com.codealike.client.eclipse.internal.services;
 
 import org.eclipse.equinox.security.storage.ISecurePreferences;
@@ -14,6 +17,12 @@ import com.codealike.client.eclipse.internal.startup.PluginContext;
 import com.codealike.client.eclipse.internal.utils.Configuration;
 import com.codealike.client.eclipse.internal.utils.WorkbenchUtils;
 
+/**
+ * Identity service class.
+ *
+ * @author Daniel, pvmagacho
+ * @version 1.5.0.2
+ */
 public class IdentityService extends BaseService {
 	
 	private static IdentityService _instance;
