@@ -19,6 +19,7 @@ import com.codealike.client.eclipse.internal.model.StructuralCodeContext;
 import com.codealike.client.eclipse.internal.model.exception.NonExistingResourceException;
 import com.codealike.client.eclipse.internal.startup.PluginContext;
 
+@SuppressWarnings("restriction")
 public class CodeContextUtils {
 
 	public static IType findClass(IJavaElement element) {

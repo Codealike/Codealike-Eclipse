@@ -23,6 +23,7 @@ import com.codealike.client.eclipse.internal.utils.EditorUtils;
  * @author Daniel, pvmagacho
  * @version 1.5.0.2
  */
+@SuppressWarnings("restriction")
 public class ContextCreator {
 
 	public CodeContext createCodeContextInternal(JavaEditor javaEditor, UUID projectId) throws JavaModelException {
