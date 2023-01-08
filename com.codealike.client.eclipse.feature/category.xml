@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<site>
-   <bundle id="com.codealike.client.eclipse" version="0.4.1">
-      <category name="codealike"/>
-   </bundle>
-   <category-def name="codealike" label="Codealike"/>
-</site>

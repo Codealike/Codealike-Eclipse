@@ -1,47 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry exported="true" kind="con" path="org.eclipse.pde.core.requiredPlugins">
-		<accessrules>
-			<accessrule kind="accessible" pattern="org/eclipse/jdt/internal/**"/>
-		</accessrules>
-	</classpathentry>
+	<classpathentry kind="src" path="src/main/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11">
 		<attributes>
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" output="target/classes" path="src">
-		<attributes>
-			<attribute name="optional" value="true"/>
-			<attribute name="maven.pomderived" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="libs/cglib-3.3.0.jar"/>
-	<classpathentry kind="lib" path="libs/guava-31.1-jre.jar"/>
-	<classpathentry kind="lib" path="libs/hk2-api-3.0.3.jar"/>
-	<classpathentry kind="lib" path="libs/hk2-locator-3.0.3.jar"/>
-	<classpathentry kind="lib" path="libs/hk2-utils-3.0.3.jar"/>
-	<classpathentry kind="lib" path="libs/httpclient-4.5.14.jar"/>
-	<classpathentry kind="lib" path="libs/httpcore-4.4.16.jar"/>
-	<classpathentry kind="lib" path="libs/jackson-annotations-2.14.1.jar"/>
-	<classpathentry kind="lib" path="libs/jackson-core-2.14.1.jar"/>
-	<classpathentry kind="lib" path="libs/jackson-databind-2.14.1.jar"/>
-	<classpathentry kind="lib" path="libs/javax.inject-2.5.0-b62.jar"/>
-	<classpathentry kind="lib" path="libs/javax.ws.rs-api-2.1.1.jar"/>
-	<classpathentry kind="lib" path="libs/jersey-client-3.1.0.jar"/>
-	<classpathentry kind="lib" path="libs/jersey-common-3.1.0.jar"/>
-	<classpathentry kind="lib" path="libs/joda-time-2.12.2.jar"/>
-	<classpathentry kind="lib" path="libs/log4j-1.2.17.jar"/>
-	<classpathentry kind="lib" path="libs/nekohtml-1.9.6.2.jar"/>
-	<classpathentry kind="lib" path="libs/xercesImpl-2.8.1.jar"/>
-	<classpathentry kind="lib" path="libs/xml-apis-1.3.03.jar"/>
-	<classpathentry kind="lib" path="libs/httpasyncclient-4.1.1.jar"/>
-	<classpathentry kind="lib" path="libs/httpmime-4.5.2.jar"/>
-	<classpathentry kind="lib" path="libs/jackson-datatype-joda-2.3.0.jar"/>
-	<classpathentry kind="lib" path="libs/joda-time-2.3.jar"/>
-	<classpathentry kind="lib" path="libs/json-20160212.jar"/>
-	<classpathentry kind="lib" path="libs/unirest-java-1.4.9.jar"/>
-	<classpathentry kind="lib" path="libs/httpcore-nio-4.4.16.jar"/>
-	<classpathentry kind="lib" path="libs/commons-logging-1.2.jar"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="lib" path="target/dependency/animal-sniffer-annotations.jar"/>
+	<classpathentry kind="lib" path="target/dependency/aopalliance-repackaged.jar"/>
+	<classpathentry kind="lib" path="target/dependency/asm.jar"/>
+	<classpathentry kind="lib" path="target/dependency/bcpg-jdk18on.jar"/>
+	<classpathentry kind="lib" path="target/dependency/bcprov-jdk18on.jar"/>
+	<classpathentry kind="lib" path="target/dependency/cglib.jar"/>
+	<classpathentry kind="lib" path="target/dependency/checker-qual.jar"/>
+	<classpathentry kind="lib" path="target/dependency/commons-codec.jar"/>
+	<classpathentry kind="lib" path="target/dependency/commons-logging.jar"/>
+	<classpathentry kind="lib" path="target/dependency/error_prone_annotations.jar"/>
+	<classpathentry kind="lib" path="target/dependency/failureaccess.jar"/>
+	<classpathentry kind="lib" path="target/dependency/guava.jar"/>
+	<classpathentry kind="lib" path="target/dependency/hk2-api.jar"/>
+	<classpathentry kind="lib" path="target/dependency/hk2-locator.jar"/>
+	<classpathentry kind="lib" path="target/dependency/hk2-utils.jar"/>
+	<classpathentry kind="lib" path="target/dependency/httpasyncclient.jar"/>
+	<classpathentry kind="lib" path="target/dependency/httpclient.jar"/>
+	<classpathentry kind="lib" path="target/dependency/httpcore.jar"/>
+	<classpathentry kind="lib" path="target/dependency/httpcore-nio.jar"/>
+	<classpathentry kind="lib" path="target/dependency/httpmime.jar"/>
+	<classpathentry kind="lib" path="target/dependency/j2objc-annotations.jar"/>
+	<classpathentry kind="lib" path="target/dependency/jackson-annotations.jar"/>
+	<classpathentry kind="lib" path="target/dependency/jackson-core.jar"/>
+	<classpathentry kind="lib" path="target/dependency/jackson-databind.jar"/>
+	<classpathentry kind="lib" path="target/dependency/jackson-datatype-joda.jar"/>
+	<classpathentry kind="lib" path="target/dependency/jakarta.annotation-api.jar"/>
+	<classpathentry kind="lib" path="target/dependency/jakarta.inject-api.jar"/>
+	<classpathentry kind="lib" path="target/dependency/javassist.jar"/>
+	<classpathentry kind="lib" path="target/dependency/javax.inject.jar"/>
+	<classpathentry kind="lib" path="target/dependency/javax.ws.rs-api.jar"/>
+	<classpathentry kind="lib" path="target/dependency/jna.jar"/>
+	<classpathentry kind="lib" path="target/dependency/jna-platform.jar"/>
+	<classpathentry kind="lib" path="target/dependency/joda-time.jar"/>
+	<classpathentry kind="lib" path="target/dependency/jsr305.jar"/>
+	<classpathentry kind="lib" path="target/dependency/listenablefuture.jar"/>
+	<classpathentry kind="lib" path="target/dependency/log4j.jar"/>
+	<classpathentry kind="lib" path="target/dependency/org.apache.felix.scr.jar"/>
+	<classpathentry kind="lib" path="target/dependency/xz.jar"/>
+	<classpathentry kind="lib" path="target/dependency/nekohtml.jar"/>
+	<classpathentry kind="lib" path="target/dependency/unirest-java.jar"/>
+	<classpathentry kind="lib" path="target/dependency/xercesImpl.jar"/>
+	<classpathentry kind="lib" path="target/dependency/xml-apis.jar"/>
+	<classpathentry kind="lib" path="target/dependency/json.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

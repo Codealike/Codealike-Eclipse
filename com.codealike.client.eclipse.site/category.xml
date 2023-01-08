@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature id="com.codealike.client.eclipse.feature">
+      <category name="codealike"/>
+   </feature>
+   <bundle id="com.codealike.client.eclipse" version="0.4.5">
+      <category name="codealike"/>
+   </bundle>
+   <category-def name="codealike" label="Codealike"/>
+</site>
