@@ -9,6 +9,19 @@
       Codealike is a service that shows you the way you code in a brand new way through a set of Powerful Metrics.
    </description>
 
+   <copyright url="http://www.codealike.com">
+      Copyright (c) 2022. All rights reserver to Torc LLC
+   </copyright>
+
+   <license url="http://www.example.com/license">
+      [Enter License Description here.]
+   </license>
+
+   <url>
+      <update label="com.codealike.client.eclipse Update Site" url="http://www.example.com/update"/>
+      <discovery label="com.codealike.client.eclipse Discovery Site" url="http://www.example.com/update"/>
+   </url>
+
    <plugin
          id="com.codealike.client.eclipse"
          download-size="0"

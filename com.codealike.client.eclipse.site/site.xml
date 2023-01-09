@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/com.codealike.client.eclipse.feature_0.4.1.jar" id="com.codealike.client.eclipse.feature" version="0.4.1"/>
-   <feature url="features/com.codealike.client.eclipse.feature_0.4.2.jar" id="com.codealike.client.eclipse.feature" version="0.4.2"/>
-   <feature url="features/com.codealike.client.eclipse.feature_0.4.3.jar" id="com.codealike.client.eclipse.feature" version="0.4.3"/>
-   <feature url="features/com.codealike.client.eclipse.feature_0.4.4.jar" id="com.codealike.client.eclipse.feature" version="0.4.4"/>
-   <feature url="features/com.codealike.client.eclipse.feature_0.4.5.jar" id="com.codealike.client.eclipse.feature" version="0.4.5"/>
+   <feature url="features/com.codealike.client.eclipse.feature_0.4.5.jar" id="com.codealike.client.eclipse.feature" version="0.4.5" os="linux,macosx,win32" ws="win32" nl="en_US" arch="x86,x86_64"/>
 </site>
